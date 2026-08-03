@@ -35,7 +35,7 @@ jobs:
           restore-keys: lake-${{ runner.os }}-
       - name: Fetch pinned Lake dependencies
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.ECOSYSTEM_READ_TOKEN || github.token }}
         run: |
           set -euo pipefail
           mkdir -p .lake/packages
@@ -57,10 +57,21 @@ jobs:
             d8c68e5f32ebd21a85c834923c95e113599da7a6
       - uses: leanprover/lean-action@v1
         with:
-          build-args: "TermColor.Diagnostics TermColor.Diagnostics.Properties tests readme demo"
+          build-args: "TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo"
       - name: Run tests
         run: ./.lake/build/bin/tests
+      - name: Verify terminal policies
+        run: |
+          env -u NO_COLOR -u FORCE_COLOR TERM=xterm ./.lake/build/bin/detect plain
+          env -u NO_COLOR FORCE_COLOR=1 TERM=xterm ./.lake/build/bin/detect ansi16
+          env -u NO_COLOR FORCE_COLOR=1 TERM=xterm-256color ./.lake/build/bin/detect ansi256
+          env -u NO_COLOR FORCE_COLOR=1 TERM=xterm COLORTERM=truecolor \
+            ./.lake/build/bin/detect truecolor
+          env NO_COLOR=1 FORCE_COLOR=1 TERM=xterm ./.lake/build/bin/detect plain
+          env -u NO_COLOR FORCE_COLOR=1 TERM=dumb ./.lake/build/bin/detect plain
       - name: Verify README examples
         run: ./.lake/build/bin/readme >/dev/null
+      - name: Render demo gallery
+        run: ./.lake/build/bin/demo >/dev/null
       - name: Audit proof axioms
         run: python3 scripts/check-axioms.py

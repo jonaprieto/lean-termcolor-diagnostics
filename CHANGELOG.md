@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5
+
+- Add a complete edge-case demo gallery and 31 executable rendering checks.
+- Add raw-byte sources with invalid UTF-8 replacement fallback.
+- Add ANSI target and environment-policy checks for CI.
+- Add README screenshots, coverage audit, and private dependency authentication.
+
 ## 0.1.4
 
 - Make Unicode mode render `╰─>` locations and `│` gutters.

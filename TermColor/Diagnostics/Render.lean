@@ -63,7 +63,7 @@ private def gutter (unicode : Bool) : String :=
 private def locationArrow (unicode : Bool) : String :=
   if unicode then "╰─>" else "-->"
 
-private def sourceBytes (source : Source) : ByteArray := source.text.toUTF8
+private def sourceBytes (source : Source) : ByteArray := source.utf8Bytes
 
 private def prefixText (source : Source) (line : Line) (offset : Nat) : String :=
   let bytes := sourceBytes source

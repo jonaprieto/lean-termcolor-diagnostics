@@ -2,7 +2,7 @@ import Lake
 open Lake DSL
 
 package «termcolor-diagnostics» where
-  version := v!"0.1.4"
+  version := v!"0.1.5"
   leanOptions := #[⟨`autoImplicit, false⟩, ⟨`relaxedAutoImplicit, false⟩]
 
 require «termcolor-layout» from git
@@ -24,6 +24,10 @@ lean_exe «demo» where
 
 lean_exe «tests» where
   root := `Tests
+  srcDir := "test"
+
+lean_exe «detect» where
+  root := `Detect
   srcDir := "test"
 
 lean_exe «readme» where

@@ -17,11 +17,21 @@ abbrev SourceId := Nat
 structure Source where
   name : String
   text : String
+  rawBytes : Option (Array UInt8) := none
   deriving BEq, DecidableEq, Repr, Inhabited
 
 namespace Source
 
 def named (name text : String) : Source := { name, text }
+
+/-- Build a source from raw bytes, replacing invalid UTF-8 with `�` when rendered. -/
+def fromBytes (name : String) (bytes : ByteArray) : Source :=
+  { name, text := (String.fromUTF8? bytes).getD "�", rawBytes := some bytes.data }
+
+def utf8Bytes (source : Source) : ByteArray :=
+  match source.rawBytes with
+  | some bytes => ByteArray.mk bytes
+  | none => source.text.toUTF8
 
 end Source
 
@@ -88,6 +98,10 @@ def error (title : String) : Diagnostic := { title }
 def warning (title : String) : Diagnostic := { severity := .warning, title }
 
 def info (title : String) : Diagnostic := { severity := .info, title }
+
+def note (title : String) : Diagnostic := { severity := .note, title }
+
+def help (title : String) : Diagnostic := { severity := .help, title }
 
 def withCode (diagnostic : Diagnostic) (code : String) : Diagnostic :=
   { diagnostic with code := some code }

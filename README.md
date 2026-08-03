@@ -6,19 +6,22 @@
 
 Source-annotated diagnostics and rich error reporting for Lean 4 command-line tools.
 
+![Source-annotated diagnostic](assets/diagnostic-error.svg)
+
+![Terminal target gallery](assets/diagnostic-targets.svg)
+
 termcolor-diagnostics keeps diagnostic data separate from terminal IO. A diagnostic contains
 source spans, labels, notes, and help text; rendering returns TermColor.Text, so callers can
 choose plain output, ANSI-16, ANSI-256, or true color with the existing termcolor stack.
 
 ## Install
 
-Add the package to lakefile.toml:
+Add the package to `lakefile.lean`:
 
-~~~toml
-[[require]]
-name = "termcolor-diagnostics"
-git = "https://github.com/jonaprieto/lean-termcolor-diagnostics"
-rev = "v0.1.4"
+~~~lean
+require «termcolor-diagnostics» from git
+  "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
+  @ "v0.1.5"
 ~~~
 
 ## Quick start
@@ -79,7 +82,8 @@ structure Label where
 ~~~
 
 Line numbers and display columns are derived while rendering. Tabs use configurable tab stops;
-Unicode display width is supplied by termcolor-layout.
+Unicode display width is supplied by termcolor-layout. Byte-oriented callers can use
+`Source.fromBytes`; invalid UTF-8 is rendered as `�` instead of aborting the diagnostic.
 
 ## Features
 
@@ -87,8 +91,10 @@ Unicode display width is supplied by termcolor-layout.
 - single-line and multiline source spans;
 - multiple source files and diagnostics;
 - configurable width, context lines, tab width, and ASCII/Unicode decorations;
+- ANSI-16, ANSI-256, true-color, and plain render targets;
 - notes and help messages;
 - semantic palettes from ColorScheme.catppuccin, dracula, and monokai;
+- CRLF, empty-source, EOF, point-span, and invalid-UTF-8 handling;
 - pure Text output with existing ANSI and non-TTY policies;
 - separate machine-checked properties and executable rendering tests.
 
@@ -106,15 +112,30 @@ termcolor
 The diagnostics renderer depends on styled text and layout, not terminal IO. argus uses it for
 structured command-line errors, while grip remains independent of terminal packages.
 
-The demo is a feature gallery: `lake exe demo` shows errors, warnings, primary and secondary
-labels, multiline and multi-source spans, tabs, CJK text, batched diagnostics, color schemes,
-plain output, and auto-detected terminal output.
+The demo is a feature gallery: `lake exe demo` shows errors, warnings, notes, help severity,
+primary and secondary labels, multiline and multi-source spans, tabs, CJK and combining text,
+CRLF, empty and EOF spans, invalid UTF-8 fallback, width truncation, ANSI-16/256/true-color
+targets, custom palettes, batched diagnostics, plain output, and auto-detected output. The
+`detect` executable exercises terminal policy independently:
+
+~~~sh
+env -u NO_COLOR -u FORCE_COLOR TERM=xterm lake exe detect plain
+env -u NO_COLOR FORCE_COLOR=1 TERM=xterm lake exe detect ansi16
+env -u NO_COLOR FORCE_COLOR=1 TERM=xterm-256color lake exe detect ansi256
+env -u NO_COLOR FORCE_COLOR=1 TERM=xterm COLORTERM=truecolor lake exe detect truecolor
+env -u NO_COLOR -u FORCE_COLOR TERM=dumb lake exe detect plain
+~~~
+
+Argus consumes the same structured model through its `Help.renderErrors` integration, preserving
+parser error accumulation while adding source-annotated output. See the
+[Argus demo](https://github.com/jonaprieto/lean-argus/blob/main/examples/Demo.lean).
 
 ## Development
 
 ~~~sh
-lake build TermColor.Diagnostics TermColor.Diagnostics.Properties tests readme demo
+lake build TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo
 lake exe tests
+lake exe detect plain
 python3 scripts/check-axioms.py
 python3 scripts/style-check.py
 lake exe demo
@@ -122,13 +143,18 @@ lake exe demo
 
 TermColor.Diagnostics.Properties is separate from the runtime package. The properties package
 checks span and source-indexing laws; executable tests cover the complete visual layout and
-Unicode cases. The CI workflow runs the same audit on every push and pull request.
+Unicode cases. The CI workflow runs the same audit on every push and pull request. The detailed
+coverage checklist is in [docs/COVERAGE.md](docs/COVERAGE.md). CI uses the repository secret
+`ECOSYSTEM_READ_TOKEN` when present to clone the private `lean-termcolor` and
+`lean-termcolor-layout` repositories; it falls back to the default GitHub token for public forks.
 
 ## Limitations
 
-The first release does not include fix-it edits, JSON/SARIF output, syntax highlighting, or
-grapheme-cluster shaping. The data model leaves room for those additions without changing the
-source-span convention.
+The current release does not include fix-it edits, JSON/SARIF output, or syntax highlighting.
+Display width is code-point based: combining marks and common wide characters are handled, but
+full grapheme-cluster shaping and terminal-specific font behavior are outside the layout layer.
+The source-span convention is stable so these features can be added without changing parser
+positions.
 
 ## License
 

@@ -38,6 +38,23 @@ private def multiline : Diagnostic :=
 
 private def loaded : Diagnostic := Diagnostic.info "configuration loaded"
 
+private def wideSource : Sources :=
+  #[Source.named "wide.toml" "timeout = 2x and a value wider than the terminal"]
+
+private def wide : Diagnostic :=
+  (Diagnostic.error "line is too wide")
+    |>.withLabel (Label.primary (Span.range 0 10 12) "invalid value")
+
+private def crlf : Source := Source.named "windows.toml" "first = 1\r\nsecond = 2"
+
+private def empty : Source := Source.named "empty.toml" ""
+
+private def invalidUtf8 : Source :=
+  Source.fromBytes "broken.txt" (ByteArray.mk #[0x66, 0x80, 0x6F])
+
+private def customScheme : ColorScheme :=
+  { ColorScheme.catppuccin with red := .rgb 255 126 95 }
+
 private def plain (diagnostic : Diagnostic) : String :=
   (render source diagnostic { width := 80 }).plainText
 
@@ -72,6 +89,34 @@ private def checks : List (Option String) :=
       (((render source simple { unicode := false }).plainText).contains " -->")
   , check "multiple diagnostics have a blank line"
       (((renderMany source many).plainText).contains "\n\n")
+  , check "CRLF line endings are excluded from source text"
+      (let lines := Source.lines crlf
+       lines.length == 2 && lines.map (·.text) == ["first = 1", "second = 2"])
+  , check "empty sources still expose one line"
+      (let lines := Source.lines empty
+       lines.length == 1 && lines.all fun line => line.byteStart == 0 && line.byteEnd == 0)
+  , check "invalid UTF-8 falls back to replacement text"
+      ((Source.lines invalidUtf8).map (·.text) == ["�"])
+  , check "EOF point spans render"
+      (let diagnostic := (Diagnostic.info "end of file")
+          |>.withLabel (Label.primary (Span.point 0 source[0]!.text.toUTF8.size) "EOF")
+       (render source diagnostic { contextLines := 0 }).plainText.contains "EOF")
+  , check "note severity is rendered"
+      ((render #[] (Diagnostic.note "hint")).plainText.startsWith "note")
+  , check "help severity is rendered"
+      ((render #[] (Diagnostic.help "usage")).plainText.startsWith "help")
+  , check "width truncation drops the tail"
+      (let output := (render wideSource wide { width := 32, contextLines := 0 }).plainText
+       output.contains "timeout = 2x" && !output.contains "wider than the terminal")
+  , check "direct tab expansion uses display stops"
+      (Layout.expandTabs 4 "a\t界" == "a   界" && Layout.stringWidthWithTabs 4 "a\t界" == 6)
+  , check "ANSI-16 emits styling"
+      ((Text.render RenderTarget.ansi16 (render source simple)).contains "\u001b[")
+  , check "ANSI-256 emits indexed styling"
+      ((Text.render RenderTarget.ansi256 (render source simple)).contains "38;5;")
+  , check "true color emits RGB styling"
+      ((Text.render RenderTarget.trueColor
+          (render source simple (scheme := customScheme))).contains "38;2;255;126;95")
   ]
 
 def main : IO UInt32 := do

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">termcolor-diagnostics terminal target gallery</title>
+  <desc id="desc">Three dark terminal cards comparing true color, ANSI 256, and plain diagnostic output.</desc>
+  <rect width="1200" height="560" rx="18" fill="#181825"/>
+  <text x="48" y="58" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="27" font-weight="700">One diagnostic · every terminal</text>
+  <text x="48" y="91" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">pure Text rendering with explicit target selection and automatic policy detection</text>
+
+  <rect x="38" y="125" width="356" height="370" rx="14" fill="#1e1e2e" stroke="#cba6f7" stroke-width="2"/>
+  <rect x="38" y="125" width="356" height="48" rx="14" fill="#292b3b"/>
+  <rect x="38" y="155" width="356" height="18" fill="#292b3b"/>
+  <circle cx="62" cy="149" r="6" fill="#f38ba8"/><circle cx="82" cy="149" r="6" fill="#f9e2af"/><circle cx="102" cy="149" r="6" fill="#a6e3a1"/>
+  <text x="126" y="156" fill="#cba6f7" font-family="SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700">true-color</text>
+  <text x="58" y="215" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="19" font-weight="700">error [E1001]</text>
+  <text x="58" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
+  <text x="58" y="291" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
+  <text x="188" y="323" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
+  <text x="58" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="58" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
+  <text x="58" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">RGB semantic palette</text>
+
+  <rect x="422" y="125" width="356" height="370" rx="14" fill="#1e1e2e" stroke="#89b4fa" stroke-width="2"/>
+  <rect x="422" y="125" width="356" height="48" rx="14" fill="#292b3b"/>
+  <rect x="422" y="155" width="356" height="18" fill="#292b3b"/>
+  <circle cx="446" cy="149" r="6" fill="#f38ba8"/><circle cx="466" cy="149" r="6" fill="#f9e2af"/><circle cx="486" cy="149" r="6" fill="#a6e3a1"/>
+  <text x="510" y="156" fill="#89b4fa" font-family="SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700">ansi-256</text>
+  <text x="442" y="215" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="19" font-weight="700">error [E1001]</text>
+  <text x="442" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
+  <text x="442" y="291" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
+  <text x="572" y="323" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
+  <text x="442" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="442" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
+  <text x="442" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">indexed 256-color fallback</text>
+
+  <rect x="806" y="125" width="356" height="370" rx="14" fill="#1e1e2e" stroke="#6c7086" stroke-width="2"/>
+  <rect x="806" y="125" width="356" height="48" rx="14" fill="#292b3b"/>
+  <rect x="806" y="155" width="356" height="18" fill="#292b3b"/>
+  <circle cx="830" cy="149" r="6" fill="#f38ba8"/><circle cx="850" cy="149" r="6" fill="#f9e2af"/><circle cx="870" cy="149" r="6" fill="#a6e3a1"/>
+  <text x="894" y="156" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700">plain / NO_COLOR</text>
+  <text x="826" y="215" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="19" font-weight="700">error [E1001]</text>
+  <text x="826" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
+  <text x="826" y="291" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
+  <text x="956" y="323" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
+  <text x="826" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="826" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
+  <text x="826" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">same structure, no escape codes</text>
+</svg>

@@ -42,7 +42,7 @@ private def decode (bytes : ByteArray) (start stop : Nat) : String :=
 
 /-- Source lines with one-based line numbers and UTF-8 byte boundaries. -/
 def lines (source : Source) : List Line :=
-  let bytes := source.text.toUTF8
+  let bytes := source.utf8Bytes
   (lineRanges bytes).mapIdx fun index (start, stop) =>
     { number := index + 1
       byteStart := start
@@ -51,7 +51,7 @@ def lines (source : Source) : List Line :=
 
 /-- Return the line containing an offset, clamping EOF to the final line. -/
 def lineAt (source : Source) (offset : Nat) : Option Line :=
-  let safeOffset := min offset source.text.toUTF8.size
+  let safeOffset := min offset source.utf8Bytes.size
   (lines source).find? fun line => line.byteStart ≤ safeOffset && safeOffset ≤ line.byteEnd
 
 end Source
