@@ -6,7 +6,7 @@ package «termcolor-diagnostics» where
   leanOptions := #[⟨`autoImplicit, false⟩, ⟨`relaxedAutoImplicit, false⟩]
 
 require «termcolor-layout» from git
-  "https://github.com/jonaprieto/lean-termcolor-layout.git" @ "ec0f5df"
+  "https://github.com/jonaprieto/lean-termcolor-layout.git" @ "3b99871"
 
 @[default_target]
 lean_lib «TermColor.Diagnostics» where
