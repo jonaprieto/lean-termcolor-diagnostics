@@ -6,10 +6,6 @@
 
 Source-annotated diagnostics and rich error reporting for Lean 4 command-line tools.
 
-![Source-annotated diagnostic](assets/diagnostic-error.svg)
-
-![Terminal target gallery](assets/diagnostic-targets.svg)
-
 termcolor-diagnostics keeps diagnostic data separate from terminal IO. A diagnostic contains
 source spans, labels, notes, and help text; rendering returns TermColor.Text, so callers can
 choose plain output, ANSI-16, ANSI-256, or true color with the existing termcolor stack.
