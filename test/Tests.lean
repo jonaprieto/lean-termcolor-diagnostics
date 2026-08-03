@@ -34,6 +34,7 @@ private def gallerySources : Sources :=
 private def multiline : Diagnostic :=
   (Diagnostic.error "multiline failure")
     |>.withLabel (Label.primary (Span.range 1 0 15) "check this block")
+    |>.withLabel (Label.secondary (Span.range 0 0 3) "related input")
 
 private def loaded : Diagnostic := Diagnostic.info "configuration loaded"
 
@@ -60,7 +61,8 @@ private def checks : List (Option String) :=
       (let output := (render gallerySources multiline { contextLines := 0 }).plainText
        output.contains "main.lean" && output.contains "2 |" && output.contains "3 |")
   , check "multiple sources retain their source name"
-      (((render gallerySources multiline { contextLines := 0 }).plainText).contains "main.lean")
+      (let output := (render gallerySources multiline { contextLines := 0 }).plainText
+       output.contains "main.lean" && output.contains "input.txt")
   , check "plain output has no escape" (!(plain ranged).contains "\u001b[")
   , check "ascii marker is rendered"
       (((render source simple { unicode := false }).plainText).contains "|")

@@ -34,6 +34,7 @@ private def sourceParseError : Diagnostic :=
   (Diagnostic.error "cannot parse source file")
     |>.withCode "E2001"
     |>.withLabel (Label.primary (Span.range 1 0 46) "expected a closing expression")
+    |>.withLabel (Label.secondary (Span.range 0 0 12) "related configuration")
 
 private def loaded : Diagnostic :=
   (Diagnostic.info "configuration loaded")

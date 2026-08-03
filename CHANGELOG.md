@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Make the demo render labels from both source files in its multi-source section.
+
 ## 0.1.2
 
 - Expand the executable demo into a renderer feature gallery.
