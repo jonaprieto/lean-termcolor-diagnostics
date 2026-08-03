@@ -33,6 +33,26 @@ jobs:
           path: .lake
           key: lake-${{ runner.os }}-${{ hashFiles('lake-manifest.json', 'lakefile.lean', 'lean-toolchain') }}
           restore-keys: lake-${{ runner.os }}-
+      - name: Fetch pinned Lake dependencies
+        run: |
+          set -euo pipefail
+          mkdir -p .lake/packages
+          if [ ! -d .lake/packages/termcolor/.git ]; then
+            git clone --depth=1 https://github.com/jonaprieto/lean-termcolor.git \
+              .lake/packages/termcolor
+          fi
+          if [ ! -d .lake/packages/termcolor-layout/.git ]; then
+            git clone --depth=1 https://github.com/jonaprieto/lean-termcolor-layout.git \
+              .lake/packages/termcolor-layout
+          fi
+          git -C .lake/packages/termcolor fetch --depth=1 origin \
+            f0c0cef08a9c0c2019929856d48c6ba46458a26f
+          git -C .lake/packages/termcolor-layout fetch --depth=1 origin \
+            d8c68e5f32ebd21a85c834923c95e113599da7a6
+          git -C .lake/packages/termcolor checkout --detach \
+            f0c0cef08a9c0c2019929856d48c6ba46458a26f
+          git -C .lake/packages/termcolor-layout checkout --detach \
+            d8c68e5f32ebd21a85c834923c95e113599da7a6
       - uses: leanprover/lean-action@v1
         with:
           build-args: "TermColor.Diagnostics TermColor.Diagnostics.Properties tests readme demo"
