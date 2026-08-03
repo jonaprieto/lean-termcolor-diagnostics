@@ -57,7 +57,7 @@ The pure renderer produces a source annotation such as:
 ~~~text
 error [E1001]: invalid duration
   ╰─> settings.toml:1:11
-   │
+  │
 1 │ timeout = 2x
   │           ^^ expected a duration
    │

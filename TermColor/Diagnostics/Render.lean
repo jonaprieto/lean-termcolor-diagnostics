@@ -195,7 +195,9 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
     let body := shown.flatMap fun line =>
       renderSourceLine scheme config sourceId source diagnostic.severity line numberWidth labels
     Layout.joinLines
-      ([location, Text.styled ("   " ++ gutter config.unicode) (gutterStyle scheme)] ++ body)
+      ([location, Text.styled
+          ((if config.unicode then "  " else "   ") ++ gutter config.unicode)
+          (gutterStyle scheme)] ++ body)
 
 private def renderNotes (scheme : ColorScheme) (diagnostic : Diagnostic) : List Text :=
   let notes := diagnostic.notes.map fun note =>

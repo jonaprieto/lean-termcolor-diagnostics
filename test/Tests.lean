@@ -97,6 +97,9 @@ private def checks : List (Option String) :=
       (((render source simple { unicode := true }).plainText).contains "│")
   , check "unicode frame uses a Unicode location arrow"
       (((render source simple { unicode := true }).plainText).contains "╰─>")
+  , check "unicode connector aligns with the source gutter"
+      (let output := (render source simple).plainText
+       output.contains "\n  │\n1 │" && !output.contains "\n   │\n1 │")
   , check "multiline labels show their message once"
       (let output := (render gallerySources multiline { contextLines := 0 }).plainText
        (output.splitOn "check this").length == 2)
