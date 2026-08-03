@@ -59,13 +59,17 @@ private def checks : List (Option String) :=
       (((render source simple { tabWidth := 4 }).plainText).contains "a   b")
   , check "multiline spans render every touched line"
       (let output := (render gallerySources multiline { contextLines := 0 }).plainText
-       output.contains "main.lean" && output.contains "2 |" && output.contains "3 |")
+       output.contains "main.lean" && output.contains "2 │" && output.contains "3 │")
   , check "multiple sources retain their source name"
       (let output := (render gallerySources multiline { contextLines := 0 }).plainText
        output.contains "main.lean" && output.contains "input.txt")
   , check "plain output has no escape" (!(plain ranged).contains "\u001b[")
+  , check "unicode frame uses a Unicode gutter"
+      (((render source simple { unicode := true }).plainText).contains "│")
+  , check "unicode frame uses a Unicode location arrow"
+      (((render source simple { unicode := true }).plainText).contains "╰─>")
   , check "ascii marker is rendered"
-      (((render source simple { unicode := false }).plainText).contains "|")
+      (((render source simple { unicode := false }).plainText).contains " -->")
   , check "multiple diagnostics have a blank line"
       (((renderMany source many).plainText).contains "\n\n")
   ]

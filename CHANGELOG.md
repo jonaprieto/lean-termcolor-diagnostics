@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Make Unicode mode render `╰─>` locations and `│` gutters.
+- Keep the ASCII fallback as `-->` and `|`.
+
 ## 0.1.3
 
 - Make the demo render labels from both source files in its multi-source section.

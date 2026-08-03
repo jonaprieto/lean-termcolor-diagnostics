@@ -53,15 +53,15 @@ private def labelStyle (scheme : ColorScheme) (severity : Severity) (kind : Labe
   | .primary => Style.bold <+> Style.fg (severityColor scheme severity)
   | .secondary => Style.fg scheme.blue
 
-private def decoration (unicode : Bool) (kind : LabelKind) : Char :=
-  if unicode then
-    match kind with
-    | .primary => '^'
-    | .secondary => '~'
-  else
-    match kind with
-    | .primary => '^'
-    | .secondary => '~'
+private def decoration : LabelKind → Char
+  | .primary => '^'
+  | .secondary => '~'
+
+private def gutter (unicode : Bool) : String :=
+  if unicode then "│" else "|"
+
+private def locationArrow (unicode : Bool) : String :=
+  if unicode then "╰─>" else "-->"
 
 private def sourceBytes (source : Source) : ByteArray := source.text.toUTF8
 
@@ -117,7 +117,8 @@ private def renderLine (scheme : ColorScheme) (config : RenderConfig) (line : Li
     (numberWidth : Nat) : Text :=
   let available := max 1 (config.width - numberWidth - 3)
   let text := Layout.truncate available (Text.plain (lineText config line))
-  Text.styled (padLeft numberWidth (toString line.number) ++ " | ") (gutterStyle scheme) ++ text
+  Text.styled (padLeft numberWidth (toString line.number) ++ " " ++ gutter config.unicode ++ " ")
+      (gutterStyle scheme) ++ text
 
 private def markerBounds (source : Source) (config : RenderConfig) (line : Line) (label : Label) :
     Nat × Nat :=
@@ -133,10 +134,10 @@ private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
     (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
     (label : Label) : Text :=
   let (start, stop) := markerBounds source config line label
-  let mark := decoration config.unicode label.kind
+  let mark := decoration label.kind
   let body := spaces start ++ repeatChar mark (stop - start)
   let message := if label.message.isEmpty then "" else " " ++ label.message
-  Text.styled (spaces numberWidth ++ " | ") (gutterStyle scheme) ++
+  Text.styled (spaces numberWidth ++ " " ++ gutter config.unicode ++ " ") (gutterStyle scheme) ++
     Text.styled body (labelStyle scheme severity label.kind) ++ Text.plain message
 
 private def sourceLocation (source : Source) (config : RenderConfig) (label : Label) : String :=
@@ -145,7 +146,7 @@ private def sourceLocation (source : Source) (config : RenderConfig) (label : La
   let column := match line with
     | some line => displayColumn source line label.span.start config.tabWidth + 1
     | none => 1
-  s!"  --> {source.name}:{lineNumber}:{column}"
+  s!"  {locationArrow config.unicode} {source.name}:{lineNumber}:{column}"
 
 private def renderSourceLine (scheme : ColorScheme) (config : RenderConfig) (sourceId : SourceId)
     (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
@@ -171,10 +172,11 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
     let shown := sourceLines.filter (lineIsShown source config labels)
     let location := match firstLabel labels with
       | some label => Text.plain (sourceLocation source config label)
-      | none => Text.plain s!"  --> {source.name}"
+      | none => Text.plain s!"  {locationArrow config.unicode} {source.name}"
     let body := shown.flatMap fun line =>
       renderSourceLine scheme config sourceId source diagnostic.severity line numberWidth labels
-    Layout.joinLines ([location, Text.styled "   |" (gutterStyle scheme)] ++ body)
+    Layout.joinLines
+      ([location, Text.styled ("   " ++ gutter config.unicode) (gutterStyle scheme)] ++ body)
 
 private def renderNotes (scheme : ColorScheme) (diagnostic : Diagnostic) : List Text :=
   let notes := diagnostic.notes.map fun note =>

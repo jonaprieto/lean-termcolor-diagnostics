@@ -18,7 +18,7 @@ Add the package to lakefile.toml:
 [[require]]
 name = "termcolor-diagnostics"
 git = "https://github.com/jonaprieto/lean-termcolor-diagnostics"
-rev = "v0.1.3"
+rev = "v0.1.4"
 ~~~
 
 ## Quick start
@@ -46,11 +46,11 @@ The pure renderer produces a source annotation such as:
 
 ~~~text
 error [E1001]: invalid duration
-  --> settings.toml:1:11
-   |
-1 | timeout = 2x
-  |           ^^ expected a duration
-   |
+  ╰─> settings.toml:1:11
+   │
+1 │ timeout = 2x
+  │           ^^ expected a duration
+   │
 = help: try timeout = 2m
 ~~~
 
