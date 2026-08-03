@@ -14,7 +14,7 @@
   <text x="58" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
   <text x="58" y="291" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
   <text x="188" y="323" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
-  <text x="58" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="58" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17" text-decoration="underline">help:</text>
   <text x="58" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
   <text x="58" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">RGB semantic palette</text>
 
@@ -27,7 +27,7 @@
   <text x="442" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
   <text x="442" y="291" fill="#a6adc8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
   <text x="572" y="323" fill="#f38ba8" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
-  <text x="442" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="442" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17" text-decoration="underline">help:</text>
   <text x="442" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
   <text x="442" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">indexed 256-color fallback</text>
 
@@ -40,7 +40,7 @@
   <text x="826" y="249" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">╰─&gt; config.toml:1:11</text>
   <text x="826" y="291" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">1 │ timeout = 2x</text>
   <text x="956" y="323" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">^^</text>
-  <text x="826" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17">= help:</text>
+  <text x="826" y="355" fill="#a6e3a1" font-family="SFMono-Regular,Menlo,monospace" font-size="17" text-decoration="underline">help:</text>
   <text x="826" y="387" fill="#cdd6f4" font-family="SFMono-Regular,Menlo,monospace" font-size="17">  try timeout = 2m</text>
   <text x="826" y="451" fill="#6c7086" font-family="SFMono-Regular,Menlo,monospace" font-size="15">same structure, no escape codes</text>
 </svg>

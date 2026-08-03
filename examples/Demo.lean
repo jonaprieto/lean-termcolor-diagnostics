@@ -98,7 +98,8 @@ private def printSection (title text : String) : IO Unit := do
 
 def main : IO Unit := do
   let normal : RenderConfig := { width := 72, tabWidth := 4, contextLines := 1 }
-  let compact : RenderConfig := { width := 52, tabWidth := 8, contextLines := 0, unicode := false }
+  let compact : RenderConfig := { width := 52, tabWidth := 8, contextLines := 0 }
+  let asciiCompact : RenderConfig := { compact with unicode := false }
   let narrow : RenderConfig := { width := 32, tabWidth := 4, contextLines := 0 }
 
   printSection "ERROR + CODE + NOTE + HELP / CATPPUCCIN"
@@ -107,6 +108,8 @@ def main : IO Unit := do
     (diagnosticText .trueColor unusedWorkers normal ColorScheme.monokai)
   printSection "MULTI-SOURCE + MULTILINE + TAB + CJK / CATPPUCCIN"
     (diagnosticText .trueColor sourceParseError compact ColorScheme.catppuccin)
+  printSection "ASCII FRAME FALLBACK"
+    (diagnosticText .trueColor sourceParseError asciiCompact ColorScheme.catppuccin)
   printSection "MULTIPLE DIAGNOSTICS / DRACULA"
     (manyText .trueColor normal ColorScheme.dracula)
   printSection "UNICODE FRAME + CUSTOM SCHEME"

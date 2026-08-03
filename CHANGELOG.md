@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.7
+
+- Render multiline label messages once at the label's starting line.
+- Use Unicode framing consistently in the multi-source demo.
+- Add an explicit ASCII frame fallback section.
+- Use clear `note:` and `help:` metadata prefixes without the rustc-style `=`.
+- Expand the executable suite to 35 diagnostics checks.
+- Underline the `note:` and `help:` labels in styled output.
+
 ## 0.1.6
 
 - Add Unicode `╰─` connectors between label markers and their messages.
@@ -8,7 +17,7 @@
 
 ## 0.1.5
 
-- Add a complete edge-case demo gallery and 33 executable rendering checks.
+- Add a complete edge-case demo gallery and 31 executable rendering checks.
 - Add raw-byte sources with invalid UTF-8 replacement fallback.
 - Add ANSI target and environment-policy checks for CI.
 - Add README screenshots, coverage audit, and private dependency authentication.

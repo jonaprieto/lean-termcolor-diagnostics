@@ -63,9 +63,6 @@ private def gutter (unicode : Bool) : String :=
 private def locationArrow (unicode : Bool) : String :=
   if unicode then "╰─>" else "-->"
 
-private def labelConnector (unicode : Bool) : String :=
-  if unicode then "╰─ " else " "
-
 private def sourceBytes (source : Source) : ByteArray := source.utf8Bytes
 
 private def prefixText (source : Source) (line : Line) (offset : Nat) : String :=
@@ -135,16 +132,13 @@ private def markerBounds (source : Source) (config : RenderConfig) (line : Line)
 
 private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
     (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
-    (label : Label) : Text :=
+    (label : Label) (showMessage : Bool) : Text :=
   let (start, stop) := markerBounds source config line label
   let mark := decoration label.kind
   let body := spaces start ++ repeatChar mark (stop - start)
-  let connector :=
-    if label.message.isEmpty then ""
-    else labelConnector config.unicode
+  let message := if showMessage && !label.message.isEmpty then " " ++ label.message else ""
   Text.styled (spaces numberWidth ++ " " ++ gutter config.unicode ++ " ") (gutterStyle scheme) ++
-    Text.styled body (labelStyle scheme severity label.kind) ++
-    Text.styled connector (labelStyle scheme severity label.kind) ++ Text.plain label.message
+    Text.styled body (labelStyle scheme severity label.kind) ++ Text.plain message
 
 private def sourceLocation (source : Source) (config : RenderConfig) (label : Label) : String :=
   let line := Source.lineAt source label.span.start
@@ -159,7 +153,9 @@ private def renderSourceLine (scheme : ColorScheme) (config : RenderConfig) (sou
     (labels : List Label) : List Text :=
   let visibleLabels := labels.filter (labelTouches sourceId line)
   let sourceText := renderLine scheme config line numberWidth
-  let markers := visibleLabels.map (renderMarker scheme config source severity line numberWidth)
+  let markers := visibleLabels.map fun label =>
+    renderMarker scheme config source severity line numberWidth label
+      (line.number == lineNumberOf source label)
   sourceText :: markers
 
 private def uniqueIds (labels : List Label) : List SourceId :=
@@ -186,9 +182,10 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
 
 private def renderNotes (scheme : ColorScheme) (diagnostic : Diagnostic) : List Text :=
   let notes := diagnostic.notes.map fun note =>
-    Text.styled "= note: " (Style.fg scheme.comment) ++ Text.plain note
+    Text.styled "note: " (Style.underline <+> Style.fg scheme.comment) ++ Text.plain note
   let helps := diagnostic.helps.map fun help =>
-    Text.styled "= help: " (Style.bold <+> Style.fg scheme.green) ++ Text.plain help
+    Text.styled "help: " (Style.underline <+> Style.bold <+> Style.fg scheme.green) ++
+      Text.plain help
   notes ++ helps
 
 private def renderHeader (scheme : ColorScheme) (diagnostic : Diagnostic) : Text :=

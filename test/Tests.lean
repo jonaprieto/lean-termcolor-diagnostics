@@ -68,6 +68,13 @@ private def checks : List (Option String) :=
   , check "secondary label is rendered" ((plain ranged).contains "related text")
   , check "note is rendered" ((plain ranged).contains "this is only a warning")
   , check "help is rendered" ((plain ranged).contains "remove the extra value")
+  , check "note and help prefixes are semantic"
+      (let output := (plain ranged)
+       output.contains "note: this is only a warning" &&
+         output.contains "help: remove the extra value" &&
+         !output.contains "= note:" && !output.contains "= help:")
+  , check "note and help labels underline in ANSI"
+      ((Text.render RenderTarget.trueColor (render source ranged)).contains "\u001b[4;")
   , check "unicode source is preserved" ((plain ranged).contains "界e\u0301")
   , check "warning severity is rendered" ((plain ranged).startsWith "warning")
   , check "info severity is rendered"
@@ -85,10 +92,11 @@ private def checks : List (Option String) :=
       (((render source simple { unicode := true }).plainText).contains "│")
   , check "unicode frame uses a Unicode location arrow"
       (((render source simple { unicode := true }).plainText).contains "╰─>")
-  , check "unicode labels connect their messages"
-      (((render source ranged { unicode := true }).plainText).contains "╰─ related text")
-  , check "ascii labels keep the ASCII separator"
-      (!((render source ranged { unicode := false }).plainText).contains "╰─ related text")
+  , check "multiline labels show their message once"
+      (let output := (render gallerySources multiline { contextLines := 0 }).plainText
+       (output.splitOn "check this").length == 2)
+  , check "unicode multiline frame uses Unicode gutters"
+      (((render gallerySources multiline { contextLines := 0 }).plainText).contains "│")
   , check "ascii marker is rendered"
       (((render source simple { unicode := false }).plainText).contains " -->")
   , check "multiple diagnostics have a blank line"
