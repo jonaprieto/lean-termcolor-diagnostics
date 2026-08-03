@@ -61,6 +61,10 @@ private def customScheme : ColorScheme :=
 private def plain (diagnostic : Diagnostic) : String :=
   (render source diagnostic { width := 80 }).plainText
 
+private def renderOne (source : Source) (diagnostic : Diagnostic)
+    (config : RenderConfig := {}) : Text :=
+  render #[source] diagnostic config
+
 private def checks : List (Option String) :=
   [ check "point span has zero length" (Span.length (Span.point 0 4) == 0)
   , check "range span has length" (Span.length (Span.range 0 2 5) == 3)
@@ -117,6 +121,12 @@ private def checks : List (Option String) :=
        lines.length == 1 && lines.all fun line => line.byteStart == 0 && line.byteEnd == 0)
   , check "invalid UTF-8 falls back to replacement text"
       ((Source.lines invalidUtf8).map (·.text) == ["�"])
+  , check "invalid UTF-8 preserves later byte columns"
+      (let broken := Source.fromBytes "broken.txt" (ByteArray.mk #[0x66, 0x80, 0x6F])
+       let diagnostic := (Diagnostic.error "bad").withLabel
+         (Label.primary (Span.point 0 2) "bad")
+       let output := renderOne broken diagnostic { contextLines := 0 }
+       output.plainText.contains "broken.txt:1:3")
   , check "EOF point spans render"
       (let diagnostic := (Diagnostic.info "end of file")
           |>.withLabel (Label.primary (Span.point 0 source[0]!.text.toUTF8.size) "EOF")
@@ -140,9 +150,9 @@ private def checks : List (Option String) :=
   , check "source filename uses the scheme cyan"
       ((Text.render RenderTarget.trueColor (render linkedSource simple)).contains
         "38;2;148;226;213")
-  , check "source hyperlinks are opt-in"
+  , check "source hyperlinks are enabled by default"
       (let output := Text.render (RenderTarget.withHyperlinks RenderTarget.trueColor)
-          (render linkedSource simple { hyperlinks := true })
+          (render linkedSource simple)
        output.contains "\u001b]8;;file:///tmp/input.txt\u001b\\" &&
          output.contains "input.txt" && output.contains ":1:5" &&
          output.contains "\u001b]8;;\u001b\\")

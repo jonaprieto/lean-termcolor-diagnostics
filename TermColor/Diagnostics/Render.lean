@@ -63,17 +63,25 @@ private def gutter (unicode : Bool) : String :=
 private def locationArrow (unicode : Bool) : String :=
   if unicode then "╰─>" else "-->"
 
-private def sourceBytes (source : Source) : ByteArray := source.utf8Bytes
+private structure SourceView where
+  source : Source
+  bytes : ByteArray
+  lines : List Line
 
-private def prefixText (source : Source) (line : Line) (offset : Nat) : String :=
-  let bytes := sourceBytes source
+private def sourceView (source : Source) : SourceView :=
+  let bytes := source.utf8Bytes
+  { source, bytes, lines := Source.linesFromBytes bytes }
+
+private def lineAt (view : SourceView) (offset : Nat) : Option Line :=
+  let safeOffset := min offset view.bytes.size
+  view.lines.find? fun line => line.byteStart ≤ safeOffset && safeOffset ≤ line.byteEnd
+
+private def prefixText (view : SourceView) (line : Line) (offset : Nat) : String :=
   let stop := min (max offset line.byteStart) line.byteEnd
-  match String.fromUTF8? (bytes.extract line.byteStart stop) with
-  | some text => text
-  | none => ""
+  Source.decodePrefix (view.bytes.extract line.byteStart stop)
 
-private def displayColumn (source : Source) (line : Line) (offset tabWidth : Nat) : Nat :=
-  Layout.stringWidthWithTabs tabWidth (prefixText source line offset)
+private def displayColumn (view : SourceView) (line : Line) (offset tabWidth : Nat) : Nat :=
+  Layout.stringWidthWithTabs tabWidth (prefixText view line offset)
 
 private def lineTouches (line : Line) (span : Span) : Bool :=
   if span.start == span.stop then
@@ -90,24 +98,21 @@ private def sourceLabels (sourceId : SourceId) (labels : List Label) : List Labe
 private def firstLabel (labels : List Label) : Option Label :=
   labels.head?
 
-private def lineNumberOf (source : Source) (label : Label) : Nat :=
-  (Source.lineAt source label.span.start).map (·.number) |>.getD 1
+private def lineNumberOf (view : SourceView) (label : Label) : Nat :=
+  (lineAt view label.span.start).map (·.number) |>.getD 1
 
-private def endLineNumberOf (source : Source) (label : Label) : Nat :=
+private def endLineNumberOf (view : SourceView) (label : Label) : Nat :=
   let offset := if label.span.stop > label.span.start then label.span.stop - 1 else label.span.stop
-  (Source.lineAt source offset).map (·.number) |>.getD 1
+  (lineAt view offset).map (·.number) |>.getD 1
 
-private def minLineNumber (source : Source) (labels : List Label) : Nat :=
-  labels.foldl (fun result label => min result (lineNumberOf source label))
-    (Nat.succ source.text.length)
+private def minLineNumber (view : SourceView) (labels : List Label) : Nat :=
+  labels.foldl (fun result label => min result (lineNumberOf view label))
+    (Nat.succ view.lines.length)
 
-private def maxLineNumber (source : Source) (labels : List Label) : Nat :=
-  labels.foldl (fun result label => max result (endLineNumberOf source label)) 0
+private def maxLineNumber (view : SourceView) (labels : List Label) : Nat :=
+  labels.foldl (fun result label => max result (endLineNumberOf view label)) 0
 
-private def lineIsShown (source : Source) (config : RenderConfig) (labels : List Label)
-    (line : Line) : Bool :=
-  let low := minLineNumber source labels
-  let high := maxLineNumber source labels
+private def lineIsShown (config : RenderConfig) (low high : Nat) (line : Line) : Bool :=
   line.number + config.contextLines ≥ low && line.number ≤ high + config.contextLines
 
 private def lineText (config : RenderConfig) (line : Line) : String :=
@@ -120,20 +125,20 @@ private def renderLine (scheme : ColorScheme) (config : RenderConfig) (line : Li
   Text.styled (padLeft numberWidth (toString line.number) ++ " " ++ gutter config.unicode ++ " ")
       (gutterStyle scheme) ++ text
 
-private def markerBounds (source : Source) (config : RenderConfig) (line : Line) (label : Label) :
+private def markerBounds (view : SourceView) (config : RenderConfig) (line : Line) (label : Label) :
     Nat × Nat :=
-  let start := displayColumn source line label.span.start config.tabWidth
+  let start := displayColumn view line label.span.start config.tabWidth
   let stop :=
     if label.span.start == label.span.stop then
       start + 1
     else
-      max (start + 1) (displayColumn source line label.span.stop config.tabWidth)
+      max (start + 1) (displayColumn view line label.span.stop config.tabWidth)
   (start, stop)
 
 private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
-    (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
+    (view : SourceView) (severity : Severity) (line : Line) (numberWidth : Nat)
     (label : Label) (showMessage : Bool) : Text :=
-  let (start, stop) := markerBounds source config line label
+  let (start, stop) := markerBounds view config line label
   let mark := decoration label.kind
   let body := spaces start ++ repeatChar mark (stop - start)
   let message := if showMessage && !label.message.isEmpty then " " ++ label.message else ""
@@ -143,29 +148,29 @@ private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
 private def sourceNameText (scheme : ColorScheme) (source : Source) : Text :=
   Text.styled source.name (Style.bold <+> Style.fg scheme.cyan)
 
-private def sourceLocation (scheme : ColorScheme) (source : Source) (config : RenderConfig)
+private def sourceLocation (scheme : ColorScheme) (view : SourceView) (config : RenderConfig)
     (label : Label) : Text :=
-  let line := Source.lineAt source label.span.start
+  let line := lineAt view label.span.start
   let lineNumber := line.map (·.number) |>.getD 1
   let column := match line with
-    | some line => displayColumn source line label.span.start config.tabWidth + 1
+    | some line => displayColumn view line label.span.start config.tabWidth + 1
     | none => 1
-  let target := sourceNameText scheme source ++ Text.plain s!":{lineNumber}:{column}"
+  let target := sourceNameText scheme view.source ++ Text.plain s!":{lineNumber}:{column}"
   let target := if config.hyperlinks then
-      match source.uri with
+      match view.source.uri with
       | some uri => Text.hyperlink uri target
       | none => target
     else target
   Text.plain s!"  {locationArrow config.unicode} " ++ target
 
 private def renderSourceLine (scheme : ColorScheme) (config : RenderConfig) (sourceId : SourceId)
-    (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
+    (view : SourceView) (severity : Severity) (line : Line) (numberWidth : Nat)
     (labels : List Label) : List Text :=
   let visibleLabels := labels.filter (labelTouches sourceId line)
   let sourceText := renderLine scheme config line numberWidth
   let markers := visibleLabels.map fun label =>
-    renderMarker scheme config source severity line numberWidth label
-      (line.number == lineNumberOf source label)
+    renderMarker scheme config view severity line numberWidth label
+      (line.number == lineNumberOf view label)
   sourceText :: markers
 
 private def uniqueIds (labels : List Label) : List SourceId :=
@@ -177,13 +182,16 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
   match sources[sourceId]? with
   | none => Text.empty
   | some source =>
+    let view := sourceView source
     let labels := sourceLabels sourceId diagnostic.labels
-    let sourceLines := Source.lines source
+    let sourceLines := view.lines
     let numberWidth := (sourceLines.map fun line => line.number).foldl
       (fun width n => max width (toString n).length) 1
-    let shown := sourceLines.filter (lineIsShown source config labels)
+    let low := minLineNumber view labels
+    let high := maxLineNumber view labels
+    let shown := sourceLines.filter (lineIsShown config low high)
     let location := match firstLabel labels with
-      | some label => sourceLocation scheme source config label
+      | some label => sourceLocation scheme view config label
       | none =>
           let name := sourceNameText scheme source
           let name := if config.hyperlinks then
@@ -193,7 +201,7 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
             else name
           Text.plain s!"  {locationArrow config.unicode} " ++ name
     let body := shown.flatMap fun line =>
-      renderSourceLine scheme config sourceId source diagnostic.severity line numberWidth labels
+      renderSourceLine scheme config sourceId view diagnostic.severity line numberWidth labels
     Layout.joinLines
       ([location, Text.styled
           ((if config.unicode then "  " else "   ") ++ gutter config.unicode)

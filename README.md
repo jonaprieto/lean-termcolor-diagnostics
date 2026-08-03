@@ -43,9 +43,9 @@ def diagnostic : Diagnostic :=
 
 #eval Text.render RenderTarget.plain (render sources diagnostic)
 
--- Set both options when the terminal supports OSC-8 hyperlinks.
+-- The diagnostics default enables source links when the target supports OSC-8.
 #eval Text.render (RenderTarget.withHyperlinks RenderTarget.trueColor)
-  (render clickableSources diagnostic { hyperlinks := true })
+  (render clickableSources diagnostic)
 ~~~
 
 The pure renderer produces a source annotation such as:
@@ -95,7 +95,7 @@ Unicode display width is supplied by termcolor-layout. Byte-oriented callers can
 - multiple source files and diagnostics;
 - configurable width, context lines, tab width, and ASCII/Unicode decorations;
 - ANSI-16, ANSI-256, true-color, and plain render targets;
-- color-scheme-highlighted filenames and opt-in OSC-8 source locations;
+- color-scheme-highlighted filenames and default OSC-8 source locations;
 - notes and help messages;
 - semantic palettes from ColorScheme.catppuccin, dracula, and monokai;
 - CRLF, empty-source, EOF, point-span, and invalid-UTF-8 handling;

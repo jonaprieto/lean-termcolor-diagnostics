@@ -128,7 +128,7 @@ structure RenderConfig where
   contextLines : Nat := 1
   unicode : Bool := true
   /-- Attach source-location hyperlinks when a source has a URI. -/
-  hyperlinks : Bool := false
+  hyperlinks : Bool := true
   deriving BEq, DecidableEq, Repr, Inhabited
 
 abbrev Sources := Array Source
