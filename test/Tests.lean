@@ -28,6 +28,15 @@ private def ranged : Diagnostic :=
 
 private def many : List Diagnostic := [simple, ranged]
 
+private def gallerySources : Sources :=
+  #[source[0]!, Source.named "main.lean" "first\n\t界\nlast"]
+
+private def multiline : Diagnostic :=
+  (Diagnostic.error "multiline failure")
+    |>.withLabel (Label.primary (Span.range 1 0 15) "check this block")
+
+private def loaded : Diagnostic := Diagnostic.info "configuration loaded"
+
 private def plain (diagnostic : Diagnostic) : String :=
   (render source diagnostic { width := 80 }).plainText
 
@@ -42,6 +51,16 @@ private def checks : List (Option String) :=
   , check "note is rendered" ((plain ranged).contains "this is only a warning")
   , check "help is rendered" ((plain ranged).contains "remove the extra value")
   , check "unicode source is preserved" ((plain ranged).contains "界e\u0301")
+  , check "warning severity is rendered" ((plain ranged).startsWith "warning")
+  , check "info severity is rendered"
+      (((render source loaded).plainText).startsWith "info")
+  , check "tabs expand to configured stops"
+      (((render source simple { tabWidth := 4 }).plainText).contains "a   b")
+  , check "multiline spans render every touched line"
+      (let output := (render gallerySources multiline { contextLines := 0 }).plainText
+       output.contains "main.lean" && output.contains "2 |" && output.contains "3 |")
+  , check "multiple sources retain their source name"
+      (((render gallerySources multiline { contextLines := 0 }).plainText).contains "main.lean")
   , check "plain output has no escape" (!(plain ranged).contains "\u001b[")
   , check "ascii marker is rendered"
       (((render source simple { unicode := false }).plainText).contains "|")

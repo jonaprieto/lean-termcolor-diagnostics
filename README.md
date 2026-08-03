@@ -18,7 +18,7 @@ Add the package to lakefile.toml:
 [[require]]
 name = "termcolor-diagnostics"
 git = "https://github.com/jonaprieto/lean-termcolor-diagnostics"
-rev = "v0.1.1"
+rev = "v0.1.2"
 ~~~
 
 ## Quick start
@@ -105,6 +105,10 @@ termcolor
 
 The diagnostics renderer depends on styled text and layout, not terminal IO. argus uses it for
 structured command-line errors, while grip remains independent of terminal packages.
+
+The demo is a feature gallery: `lake exe demo` shows errors, warnings, primary and secondary
+labels, multiline and multi-source spans, tabs, CJK text, batched diagnostics, color schemes,
+plain output, and auto-detected terminal output.
 
 ## Development
 
