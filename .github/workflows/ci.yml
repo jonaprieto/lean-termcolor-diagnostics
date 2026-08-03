@@ -34,8 +34,11 @@ jobs:
           key: lake-${{ runner.os }}-${{ hashFiles('lake-manifest.json', 'lakefile.lean', 'lean-toolchain') }}
           restore-keys: lake-${{ runner.os }}-
       - name: Fetch pinned Lake dependencies
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: bearer $GH_TOKEN"
           mkdir -p .lake/packages
           if [ ! -d .lake/packages/termcolor/.git ]; then
             git clone --depth=1 https://github.com/jonaprieto/lean-termcolor.git \
