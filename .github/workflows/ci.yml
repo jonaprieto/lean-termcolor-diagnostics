@@ -38,14 +38,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          git config --global http.https://github.com/.extraheader "AUTHORIZATION: bearer $GH_TOKEN"
           mkdir -p .lake/packages
           if [ ! -d .lake/packages/termcolor/.git ]; then
-            git clone --depth=1 https://github.com/jonaprieto/lean-termcolor.git \
+            git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/jonaprieto/lean-termcolor.git" \
               .lake/packages/termcolor
           fi
           if [ ! -d .lake/packages/termcolor-layout/.git ]; then
-            git clone --depth=1 https://github.com/jonaprieto/lean-termcolor-layout.git \
+            git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/jonaprieto/lean-termcolor-layout.git" \
               .lake/packages/termcolor-layout
           fi
           git -C .lake/packages/termcolor fetch --depth=1 origin \
