@@ -18,7 +18,7 @@ Add the package to lakefile.toml:
 [[require]]
 name = "termcolor-diagnostics"
 git = "https://github.com/jonaprieto/lean-termcolor-diagnostics"
-rev = "v0.1.0"
+rev = "v0.1.1"
 ~~~
 
 ## Quick start
