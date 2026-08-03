@@ -21,7 +21,7 @@ Add the package to `lakefile.lean`:
 ~~~lean
 require «termcolor-diagnostics» from git
   "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
-  @ "v0.1.5"
+  @ "v0.1.6"
 ~~~
 
 ## Quick start
@@ -52,7 +52,7 @@ error [E1001]: invalid duration
   ╰─> settings.toml:1:11
    │
 1 │ timeout = 2x
-  │           ^^ expected a duration
+  │           ^^╰─ expected a duration
    │
 = help: try timeout = 2m
 ~~~

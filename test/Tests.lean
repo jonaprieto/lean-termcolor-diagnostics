@@ -85,6 +85,10 @@ private def checks : List (Option String) :=
       (((render source simple { unicode := true }).plainText).contains "│")
   , check "unicode frame uses a Unicode location arrow"
       (((render source simple { unicode := true }).plainText).contains "╰─>")
+  , check "unicode labels connect their messages"
+      (((render source ranged { unicode := true }).plainText).contains "╰─ related text")
+  , check "ascii labels keep the ASCII separator"
+      (!((render source ranged { unicode := false }).plainText).contains "╰─ related text")
   , check "ascii marker is rendered"
       (((render source simple { unicode := false }).plainText).contains " -->")
   , check "multiple diagnostics have a blank line"

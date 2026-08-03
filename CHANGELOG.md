@@ -1,8 +1,14 @@
 # Changelog
 
+## 0.1.6
+
+- Add Unicode `╰─` connectors between label markers and their messages.
+- Keep ASCII marker separators unchanged.
+- Expand the executable suite to 33 diagnostics checks.
+
 ## 0.1.5
 
-- Add a complete edge-case demo gallery and 31 executable rendering checks.
+- Add a complete edge-case demo gallery and 33 executable rendering checks.
 - Add raw-byte sources with invalid UTF-8 replacement fallback.
 - Add ANSI target and environment-policy checks for CI.
 - Add README screenshots, coverage audit, and private dependency authentication.

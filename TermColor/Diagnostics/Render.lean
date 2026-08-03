@@ -63,6 +63,9 @@ private def gutter (unicode : Bool) : String :=
 private def locationArrow (unicode : Bool) : String :=
   if unicode then "╰─>" else "-->"
 
+private def labelConnector (unicode : Bool) : String :=
+  if unicode then "╰─ " else " "
+
 private def sourceBytes (source : Source) : ByteArray := source.utf8Bytes
 
 private def prefixText (source : Source) (line : Line) (offset : Nat) : String :=
@@ -136,9 +139,12 @@ private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
   let (start, stop) := markerBounds source config line label
   let mark := decoration label.kind
   let body := spaces start ++ repeatChar mark (stop - start)
-  let message := if label.message.isEmpty then "" else " " ++ label.message
+  let connector :=
+    if label.message.isEmpty then ""
+    else labelConnector config.unicode
   Text.styled (spaces numberWidth ++ " " ++ gutter config.unicode ++ " ") (gutterStyle scheme) ++
-    Text.styled body (labelStyle scheme severity label.kind) ++ Text.plain message
+    Text.styled body (labelStyle scheme severity label.kind) ++
+    Text.styled connector (labelStyle scheme severity label.kind) ++ Text.plain label.message
 
 private def sourceLocation (source : Source) (config : RenderConfig) (label : Label) : String :=
   let line := Source.lineAt source label.span.start
