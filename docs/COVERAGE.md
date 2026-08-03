@@ -17,6 +17,7 @@ in the demo when a user should be able to inspect the result directly.
 | Primary, secondary, unlabeled, and uncoded diagnostics | gallery sections | `tests` | covered |
 | Multiple sources and multiline labels | multi-source section | `tests` | covered |
 | Built-in and custom color schemes | palette sections | `tests` | covered |
+| Highlighted filenames and OSC-8 locations | `CLICKABLE SOURCE LOCATION / OSC-8` | `tests` | covered |
 | Invalid UTF-8 fallback | `INVALID UTF-8 FALLBACK` | `tests` | covered |
 | Argus integration | linked Argus demo | Argus `Help.renderErrors` tests | covered |
 | JSON/SARIF output | documented limitation | not implemented | planned |

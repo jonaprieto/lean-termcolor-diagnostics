@@ -18,11 +18,16 @@ structure Source where
   name : String
   text : String
   rawBytes : Option (Array UInt8) := none
+  /-- Optional absolute URI used for OSC-8 terminal hyperlinks. -/
+  uri : Option String := none
   deriving BEq, DecidableEq, Repr, Inhabited
 
 namespace Source
 
 def named (name text : String) : Source := { name, text }
+
+/-- Associate an absolute URI with a source without changing its contents. -/
+def withUri (source : Source) (uri : String) : Source := { source with uri := some uri }
 
 /-- Build a source from raw bytes, replacing invalid UTF-8 with `�` when rendered. -/
 def fromBytes (name : String) (bytes : ByteArray) : Source :=
@@ -122,6 +127,8 @@ structure RenderConfig where
   tabWidth : Nat := 4
   contextLines : Nat := 1
   unicode : Bool := true
+  /-- Attach source-location hyperlinks when a source has a URI. -/
+  hyperlinks : Bool := false
   deriving BEq, DecidableEq, Repr, Inhabited
 
 abbrev Sources := Array Source

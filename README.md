@@ -21,7 +21,7 @@ Add the package to `lakefile.lean`:
 ~~~lean
 require «termcolor-diagnostics» from git
   "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
-  @ "v0.1.7"
+  @ "v0.1.8"
 ~~~
 
 ## Quick start
@@ -36,6 +36,9 @@ open TermColor.Diagnostics
 def sources : Sources :=
   #[Source.named "settings.toml" "timeout = 2x"]
 
+def clickableSources : Sources :=
+  #[Source.named "settings.toml" "timeout = 2x" |>.withUri "file:///tmp/settings.toml"]
+
 def diagnostic : Diagnostic :=
   (Diagnostic.error "invalid duration")
     |>.withCode "E1001"
@@ -43,6 +46,10 @@ def diagnostic : Diagnostic :=
     |>.withHelp "try timeout = 2m"
 
 #eval Text.render RenderTarget.plain (render sources diagnostic)
+
+-- Set both options when the terminal supports OSC-8 hyperlinks.
+#eval Text.render (RenderTarget.withHyperlinks RenderTarget.trueColor)
+  (render clickableSources diagnostic { hyperlinks := true })
 ~~~
 
 The pure renderer produces a source annotation such as:
@@ -92,6 +99,7 @@ Unicode display width is supplied by termcolor-layout. Byte-oriented callers can
 - multiple source files and diagnostics;
 - configurable width, context lines, tab width, and ASCII/Unicode decorations;
 - ANSI-16, ANSI-256, true-color, and plain render targets;
+- color-scheme-highlighted filenames and opt-in OSC-8 source locations;
 - notes and help messages;
 - semantic palettes from ColorScheme.catppuccin, dracula, and monokai;
 - CRLF, empty-source, EOF, point-span, and invalid-UTF-8 handling;
@@ -115,7 +123,8 @@ structured command-line errors, while grip remains independent of terminal packa
 The demo is a feature gallery: `lake exe demo` shows errors, warnings, notes, help severity,
 primary and secondary labels, multiline and multi-source spans, tabs, CJK and combining text,
 CRLF, empty and EOF spans, invalid UTF-8 fallback, width truncation, ANSI-16/256/true-color
-targets, custom palettes, batched diagnostics, plain output, and auto-detected output. The
+targets, custom palettes, batched diagnostics, plain output, clickable OSC-8 locations, and
+auto-detected output. The
 `detect` executable exercises terminal policy independently:
 
 ~~~sh
@@ -151,6 +160,8 @@ coverage checklist is in [docs/COVERAGE.md](docs/COVERAGE.md). CI uses the repos
 ## Limitations
 
 The current release does not include fix-it edits, JSON/SARIF output, or syntax highlighting.
+OSC-8 links require an absolute URI and a terminal that supports OSC-8; plain and ordinary ANSI
+targets keep the location readable while suppressing the hyperlink sequence.
 Display width is code-point based: combining marks and common wide characters are handled, but
 full grapheme-cluster shaping and terminal-specific font behavior are outside the layout layer.
 The source-span convention is stable so these features can be added without changing parser

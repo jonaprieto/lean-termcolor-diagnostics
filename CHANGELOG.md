@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.8
+
+- Underline only severity words such as `error`, `note`, and `help`, leaving codes, punctuation,
+  and messages plain.
+- Highlight source filenames with the active scheme and support opt-in OSC-8 clickable locations.
+
 ## 0.1.7
 
 - Render multiline label messages once at the label's starting line.

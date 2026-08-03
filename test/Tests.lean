@@ -14,6 +14,9 @@ private def check (name : String) (condition : Bool) : Option String :=
 private def source : Sources :=
   #[Source.named "input.txt" "a\tb\n界e\u0301\nlast"]
 
+private def linkedSource : Sources :=
+  #[Source.named "input.txt" "a\tb\n界e\u0301\nlast" |>.withUri "file:///tmp/input.txt"]
+
 private def simple : Diagnostic :=
   (Diagnostic.error "bad input")
     |>.withCode "E1"
@@ -64,6 +67,8 @@ private def checks : List (Option String) :=
   , check "source has three lines" ((Source.lines (source[0]!)).length == 3)
   , check "simple title is rendered" ((plain simple).contains "bad input")
   , check "diagnostic code is rendered" ((plain simple).contains "[E1]")
+  , check "severity word underlines in ANSI"
+      ((Text.render RenderTarget.trueColor (render source simple)).contains "\u001b[4;1;")
   , check "primary label is rendered" ((plain simple).contains "unexpected character")
   , check "secondary label is rendered" ((plain ranged).contains "related text")
   , check "note is rendered" ((plain ranged).contains "this is only a warning")
@@ -129,6 +134,15 @@ private def checks : List (Option String) :=
   , check "true color emits RGB styling"
       ((Text.render RenderTarget.trueColor
           (render source simple (scheme := customScheme))).contains "38;2;255;126;95")
+  , check "source filename uses the scheme cyan"
+      ((Text.render RenderTarget.trueColor (render linkedSource simple)).contains
+        "38;2;148;226;213")
+  , check "source hyperlinks are opt-in"
+      (let output := Text.render (RenderTarget.withHyperlinks RenderTarget.trueColor)
+          (render linkedSource simple { hyperlinks := true })
+       output.contains "\u001b]8;;file:///tmp/input.txt\u001b\\" &&
+         output.contains "input.txt" && output.contains ":1:5" &&
+         output.contains "\u001b]8;;\u001b\\")
   ]
 
 def main : IO UInt32 := do

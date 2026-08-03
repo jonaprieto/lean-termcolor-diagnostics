@@ -140,13 +140,23 @@ private def renderMarker (scheme : ColorScheme) (config : RenderConfig)
   Text.styled (spaces numberWidth ++ " " ++ gutter config.unicode ++ " ") (gutterStyle scheme) ++
     Text.styled body (labelStyle scheme severity label.kind) ++ Text.plain message
 
-private def sourceLocation (source : Source) (config : RenderConfig) (label : Label) : String :=
+private def sourceNameText (scheme : ColorScheme) (source : Source) : Text :=
+  Text.styled source.name (Style.bold <+> Style.fg scheme.cyan)
+
+private def sourceLocation (scheme : ColorScheme) (source : Source) (config : RenderConfig)
+    (label : Label) : Text :=
   let line := Source.lineAt source label.span.start
   let lineNumber := line.map (·.number) |>.getD 1
   let column := match line with
     | some line => displayColumn source line label.span.start config.tabWidth + 1
     | none => 1
-  s!"  {locationArrow config.unicode} {source.name}:{lineNumber}:{column}"
+  let target := sourceNameText scheme source ++ Text.plain s!":{lineNumber}:{column}"
+  let target := if config.hyperlinks then
+      match source.uri with
+      | some uri => Text.hyperlink uri target
+      | none => target
+    else target
+  Text.plain s!"  {locationArrow config.unicode} " ++ target
 
 private def renderSourceLine (scheme : ColorScheme) (config : RenderConfig) (sourceId : SourceId)
     (source : Source) (severity : Severity) (line : Line) (numberWidth : Nat)
@@ -173,8 +183,15 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
       (fun width n => max width (toString n).length) 1
     let shown := sourceLines.filter (lineIsShown source config labels)
     let location := match firstLabel labels with
-      | some label => Text.plain (sourceLocation source config label)
-      | none => Text.plain s!"  {locationArrow config.unicode} {source.name}"
+      | some label => sourceLocation scheme source config label
+      | none =>
+          let name := sourceNameText scheme source
+          let name := if config.hyperlinks then
+              match source.uri with
+              | some uri => Text.hyperlink uri name
+              | none => name
+            else name
+          Text.plain s!"  {locationArrow config.unicode} " ++ name
     let body := shown.flatMap fun line =>
       renderSourceLine scheme config sourceId source diagnostic.severity line numberWidth labels
     Layout.joinLines
@@ -182,16 +199,18 @@ private def renderSource (sources : Sources) (scheme : ColorScheme) (config : Re
 
 private def renderNotes (scheme : ColorScheme) (diagnostic : Diagnostic) : List Text :=
   let notes := diagnostic.notes.map fun note =>
-    Text.styled "note: " (Style.underline <+> Style.fg scheme.comment) ++ Text.plain note
+    Text.styled "note" (Style.underline <+> Style.fg scheme.comment) ++
+      Text.plain ": " ++ Text.plain note
   let helps := diagnostic.helps.map fun help =>
-    Text.styled "help: " (Style.underline <+> Style.bold <+> Style.fg scheme.green) ++
-      Text.plain help
+    Text.styled "help" (Style.underline <+> Style.bold <+> Style.fg scheme.green) ++
+      Text.plain ": " ++ Text.plain help
   notes ++ helps
 
 private def renderHeader (scheme : ColorScheme) (diagnostic : Diagnostic) : Text :=
   let code := diagnostic.code.map (fun value => s!" [{value}]") |>.getD ""
-  Text.styled (severityName diagnostic.severity ++ code)
-      (severityStyle scheme diagnostic.severity) ++ Text.plain (": " ++ diagnostic.title)
+  let style := severityStyle scheme diagnostic.severity
+  Text.styled (severityName diagnostic.severity) (Style.underline <+> style) ++
+    Text.styled code style ++ Text.plain (": " ++ diagnostic.title)
 
 /-- Render one diagnostic as pure styled text. -/
 def render (sources : Sources) (diagnostic : Diagnostic) (config : RenderConfig := {})

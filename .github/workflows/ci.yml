@@ -48,13 +48,13 @@ jobs:
               .lake/packages/termcolor-layout
           fi
           git -C .lake/packages/termcolor fetch --depth=1 origin \
-            f0c0cef08a9c0c2019929856d48c6ba46458a26f
+            d0d9a6d24cd06a2ca5de0c47d1860fb0363aa397
           git -C .lake/packages/termcolor-layout fetch --depth=1 origin \
-            d8c68e5f32ebd21a85c834923c95e113599da7a6
+            de2394b9e1bd2328e3577115ab4b75fd1d8faf8e
           git -C .lake/packages/termcolor checkout --detach \
-            f0c0cef08a9c0c2019929856d48c6ba46458a26f
+            d0d9a6d24cd06a2ca5de0c47d1860fb0363aa397
           git -C .lake/packages/termcolor-layout checkout --detach \
-            d8c68e5f32ebd21a85c834923c95e113599da7a6
+            de2394b9e1bd2328e3577115ab4b75fd1d8faf8e
       - uses: leanprover/lean-action@v1
         with:
           build-args: "TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo"

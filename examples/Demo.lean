@@ -12,6 +12,9 @@ open TermColor.Diagnostics
 private def configSource : Source :=
   Source.named "config.toml" "timeout = 2x\nworkers = 4\nretries = 3"
 
+private def linkedConfigSource : Source :=
+  configSource.withUri "file:///tmp/config.toml"
+
 private def codeSource : Source :=
   Source.named "src/main.lean" "fn main() {\n\tlet name = \"界e\u0301\"\n\tparse config\n}"
 
@@ -135,6 +138,10 @@ def main : IO Unit := do
      s!"expandTabs={Layout.expandTabs 4 tabbed}\nwidth={Layout.stringWidthWithTabs 4 tabbed}")
   printSection "PLAIN TARGET"
     (diagnosticText .plain invalidDuration normal ColorScheme.catppuccin)
+  printSection "CLICKABLE SOURCE LOCATION / OSC-8"
+    (sourceDiagnosticText (RenderTarget.withHyperlinks .trueColor)
+      #[linkedConfigSource] invalidDuration { normal with hyperlinks := true }
+      ColorScheme.catppuccin)
   let detected ← TermColor.target
   printSection "AUTO-DETECTED TARGET"
     (diagnosticText detected loaded normal ColorScheme.catppuccin)
