@@ -33,28 +33,16 @@ jobs:
           path: .lake
           key: lake-${{ runner.os }}-${{ hashFiles('lake-manifest.json', 'lakefile.lean', 'lean-toolchain') }}
           restore-keys: lake-${{ runner.os }}-
-      - name: Fetch pinned Lake dependencies
+      # Let Lake do the cloning, with credentials rewritten in. Pre-cloning the
+      # dependencies here means repeating their revisions, which then go stale on
+      # every pin bump, and Lake re-clones (without credentials) as soon as the
+      # stored URL disagrees with the one in the lakefile.
+      - name: Configure private ecosystem URL
         env:
-          GH_TOKEN: ${{ secrets.ECOSYSTEM_READ_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.ECOSYSTEM_READ_TOKEN }}
         run: |
-          set -euo pipefail
-          mkdir -p .lake/packages
-          if [ ! -d .lake/packages/termcolor/.git ]; then
-            git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/jonaprieto/lean-termcolor.git" \
-              .lake/packages/termcolor
-          fi
-          if [ ! -d .lake/packages/termcolor-layout/.git ]; then
-            git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/jonaprieto/lean-termcolor-layout.git" \
-              .lake/packages/termcolor-layout
-          fi
-          git -C .lake/packages/termcolor fetch --depth=1 origin \
-            d0d9a6d24cd06a2ca5de0c47d1860fb0363aa397
-          git -C .lake/packages/termcolor-layout fetch --depth=1 origin \
-            de2394b9e1bd2328e3577115ab4b75fd1d8faf8e
-          git -C .lake/packages/termcolor checkout --detach \
-            d0d9a6d24cd06a2ca5de0c47d1860fb0363aa397
-          git -C .lake/packages/termcolor-layout checkout --detach \
-            de2394b9e1bd2328e3577115ab4b75fd1d8faf8e
+          test -n "$GH_TOKEN"
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
       - uses: leanprover/lean-action@v1
         with:
           build-args: "TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo"
