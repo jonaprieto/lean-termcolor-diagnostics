@@ -17,7 +17,7 @@ Add the package to `lakefile.lean`:
 ~~~lean
 require «termcolor-diagnostics» from git
   "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
-  @ "v0.1.8"
+  @ "v0.1.10"
 ~~~
 
 ## Quick start
