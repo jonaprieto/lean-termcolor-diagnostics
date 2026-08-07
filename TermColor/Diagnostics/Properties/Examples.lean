@@ -17,4 +17,11 @@ theorem diagnostic_code_example :
     ((Diagnostic.error "bad").withCode "E1").code = some "E1" := by
   rfl
 
+theorem fix_it_render_example :
+    let source := #[Source.named "config.toml" "timeout = 2x"]
+    let diagnostic := (Diagnostic.error "invalid duration").withFixIt
+      { span := Span.range 0 10 12, replacement := "2m" }
+    (render source diagnostic { contextLines := 0 }).plainText.contains "timeout = 2m" := by
+  native_decide
+
 end TermColor.Diagnostics.Properties

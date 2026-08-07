@@ -14,7 +14,10 @@ def readmeSource : Sources :=
 
 def readmeDiagnostic : Diagnostic :=
   (Diagnostic.error "invalid duration")
+    |>.withCode "E1001"
     |>.withLabel (Label.primary (Span.range 0 10 12) "expected a duration")
+    |>.withFixIt { span := Span.range 0 10 12, replacement := "2m" }
+    |>.withHelp "try timeout = 2m"
 
 #eval Text.render RenderTarget.plain (render readmeSource readmeDiagnostic)
 

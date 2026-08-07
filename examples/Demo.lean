@@ -38,6 +38,10 @@ private def invalidDuration : Diagnostic :=
     |>.withNote "durations use a number followed by s, m, or h"
     |>.withHelp "try timeout = 2m"
 
+private def invalidDurationFix : Diagnostic :=
+  invalidDuration.withFixIt
+    { span := Span.range 0 10 12, replacement := "2m", message := "use minutes" }
+
 private def unusedWorkers : Diagnostic :=
   (Diagnostic.warning "workers setting is ignored")
     |>.withLabel (Label.primary (Span.range 0 20 24) "this value has no effect")
@@ -104,9 +108,12 @@ def main : IO Unit := do
   let compact : RenderConfig := { width := 52, tabWidth := 8, contextLines := 0 }
   let asciiCompact : RenderConfig := { compact with unicode := false }
   let narrow : RenderConfig := { width := 32, tabWidth := 4, contextLines := 0 }
+  let fixItConfig : RenderConfig := { normal with contextLines := 0 }
 
   printSection "ERROR + CODE + NOTE + HELP / CATPPUCCIN"
     (diagnosticText .trueColor invalidDuration normal ColorScheme.catppuccin)
+  printSection "FIX-IT DIFF / DEFAULT - +"
+    (diagnosticText .trueColor invalidDurationFix fixItConfig ColorScheme.catppuccin)
   printSection "WARNING + PRIMARY/SECONDARY LABELS / MONOKAI"
     (diagnosticText .trueColor unusedWorkers normal ColorScheme.monokai)
   printSection "MULTI-SOURCE + MULTILINE + TAB + CJK / CATPPUCCIN"

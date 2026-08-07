@@ -1,3 +1,5 @@
+import TermColor.Style
+
 /-
 Copyright (c) 2026 Jonathan Prieto-Cubides. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
@@ -7,7 +9,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 # TermColor.Diagnostics.Model: structured diagnostic data
 
 Positions are UTF-8 byte offsets and spans are half-open. The model contains no terminal styles or
-IO; rendering assigns styles from a `ColorScheme` and returns `TermColor.Text`.
+IO; rendering assigns styles from a `ColorScheme` and returns `TermColor.Text`. Optional fix-it
+style overrides live in `FixItRenderConfig`.
 -/
 
 namespace TermColor.Diagnostics
@@ -87,11 +90,35 @@ def secondary (span : Span) (message : String := "") : Label :=
 
 end Label
 
+/-- One source edit suggested by a diagnostic. The span uses UTF-8 byte offsets. -/
+structure FixIt where
+  span : Span
+  replacement : String
+  message : String := ""
+  deriving BEq, DecidableEq, Repr
+
+namespace Source
+
+/-- Apply a byte-ranged fix-it, returning none when its span is outside the source. -/
+def applyFixIt (source : Source) (fixIt : FixIt) : Option Source :=
+  let bytes := source.utf8Bytes
+  if fixIt.span.start > fixIt.span.stop || fixIt.span.stop > bytes.size then none
+  else
+    let updatedBytes := bytes.extract 0 fixIt.span.start ++ fixIt.replacement.toUTF8 ++
+      bytes.extract fixIt.span.stop bytes.size
+    let updated := Source.fromBytes source.name updatedBytes
+    match source.uri with
+    | some uri => some (updated.withUri uri)
+    | none => some updated
+
+end Source
+
 structure Diagnostic where
   severity : Severity := .error
   code : Option String := none
   title : String
   labels : List Label := []
+  fixIts : List FixIt := []
   notes : List String := []
   helps : List String := []
   deriving BEq, DecidableEq, Repr
@@ -114,6 +141,9 @@ def withCode (diagnostic : Diagnostic) (code : String) : Diagnostic :=
 def withLabel (diagnostic : Diagnostic) (label : Label) : Diagnostic :=
   { diagnostic with labels := diagnostic.labels ++ [label] }
 
+def withFixIt (diagnostic : Diagnostic) (fixIt : FixIt) : Diagnostic :=
+  { diagnostic with fixIts := diagnostic.fixIts ++ [fixIt] }
+
 def withNote (diagnostic : Diagnostic) (note : String) : Diagnostic :=
   { diagnostic with notes := diagnostic.notes ++ [note] }
 
@@ -122,6 +152,19 @@ def withHelp (diagnostic : Diagnostic) (help : String) : Diagnostic :=
 
 end Diagnostic
 
+/-- Textual choices for rendering suggested source edits. Colors come from the supplied scheme. -/
+structure FixItRenderConfig where
+  heading : String := "suggested change"
+  messageSeparator : String := ": "
+  removedPrefix : String := "- "
+  addedPrefix : String := "+ "
+  contextPrefix : String := "  "
+  headingStyle : Option Style := none
+  removedStyle : Option Style := none
+  addedStyle : Option Style := none
+  contextStyle : Option Style := none
+  deriving BEq, DecidableEq, Repr, Inhabited
+
 structure RenderConfig where
   width : Nat := 80
   tabWidth : Nat := 4
@@ -129,6 +172,7 @@ structure RenderConfig where
   unicode : Bool := true
   /-- Attach source-location hyperlinks when a source has a URI. -/
   hyperlinks : Bool := true
+  fixIt : FixItRenderConfig := {}
   deriving BEq, DecidableEq, Repr, Inhabited
 
 abbrev Sources := Array Source

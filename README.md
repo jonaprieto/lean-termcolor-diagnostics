@@ -7,7 +7,7 @@
 Source-annotated diagnostics and rich error reporting for Lean 4 command-line tools.
 
 termcolor-diagnostics keeps diagnostic data separate from terminal IO. A diagnostic contains
-source spans, labels, notes, and help text; rendering returns TermColor.Text, so callers can
+source spans, labels, fix-it edits, notes, and help text; rendering returns TermColor.Text, so callers can
 choose plain output, ANSI-16, ANSI-256, or true color with the existing termcolor stack.
 
 ## Install
@@ -17,7 +17,7 @@ Add the package to `lakefile.lean`:
 ~~~lean
 require «termcolor-diagnostics» from git
   "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
-  @ "v0.1.10"
+  @ "v0.1.11"
 ~~~
 
 ## Quick start
@@ -39,6 +39,7 @@ def diagnostic : Diagnostic :=
   (Diagnostic.error "invalid duration")
     |>.withCode "E1001"
     |>.withLabel (Label.primary (Span.range 0 10 12) "expected a duration")
+    |>.withFixIt { span := Span.range 0 10 12, replacement := "2m" }
     |>.withHelp "try timeout = 2m"
 
 #eval Text.render RenderTarget.plain (render sources diagnostic)
@@ -56,7 +57,10 @@ error [E1001]: invalid duration
   │
 1 │ timeout = 2x
   │           ^^ expected a duration
-   │
+
+suggested change
+- timeout = 2x
++ timeout = 2m
 help: try timeout = 2m
 ~~~
 
@@ -82,15 +86,25 @@ structure Label where
   span : Span
   kind : LabelKind
   message : String
+
+structure FixIt where
+  span : Span
+  replacement : String
+  message : String := ""
 ~~~
 
 Line numbers and display columns are derived while rendering. Tabs use configurable tab stops;
 Unicode display width is supplied by termcolor-layout. Byte-oriented callers can use
 `Source.fromBytes`; invalid UTF-8 is rendered as `�` instead of aborting the diagnostic.
 
+`RenderConfig.fixIt` controls the heading, prefixes, and optional styles for suggested edits.
+When a style override is absent, removed and added lines use scheme-derived red and green
+backgrounds, while context and heading colors come from the caller's `ColorScheme`.
+
 ## Features
 
 - primary and secondary labels;
+- configurable fix-it edit rendering with removed, added, and context lines;
 - single-line and multiline source spans;
 - multiple source files and diagnostics;
 - configurable width, context lines, tab width, and ASCII/Unicode decorations;
@@ -117,8 +131,8 @@ The diagnostics renderer depends on styled text and layout, not terminal IO. arg
 structured command-line errors, while grip remains independent of terminal packages.
 
 The demo is a feature gallery: `lake exe demo` shows errors, warnings, notes, help severity,
-primary and secondary labels, multiline and multi-source spans, tabs, CJK and combining text,
-CRLF, empty and EOF spans, invalid UTF-8 fallback, width truncation, ANSI-16/256/true-color
+primary and secondary labels, configurable fix-it diffs, multiline and multi-source spans, tabs,
+CJK and combining text, CRLF, empty and EOF spans, invalid UTF-8 fallback, width truncation, ANSI-16/256/true-color
 targets, custom palettes, batched diagnostics, plain output, clickable OSC-8 locations, and
 auto-detected output. The
 `detect` executable exercises terminal policy independently:
@@ -155,7 +169,7 @@ coverage checklist is in [docs/COVERAGE.md](docs/COVERAGE.md). CI uses the repos
 
 ## Limitations
 
-The current release does not include fix-it edits, JSON/SARIF output, or syntax highlighting.
+The current release does not include JSON/SARIF output or syntax highlighting.
 OSC-8 links require an absolute URI and a terminal that supports OSC-8; plain and ordinary ANSI
 targets keep the location readable while suppressing the hyperlink sequence.
 Display width is code-point based: combining marks and common wide characters are handled, but

@@ -118,6 +118,81 @@ private def lineIsShown (config : RenderConfig) (low high : Nat) (line : Line) :
 private def lineText (config : RenderConfig) (line : Line) : String :=
   Layout.expandTabs config.tabWidth line.text
 
+private inductive DiffLine where
+  | context (text : String)
+  | removed (text : String)
+  | added (text : String)
+
+-- ponytail: line prefix/suffix diff keeps fix-it rendering small; extract a general diff
+-- algorithm if callers need arbitrary large-document diffs.
+private def commonPrefix : List String → List String → List String
+  | left :: rest, right :: rest' =>
+      if left == right then left :: commonPrefix rest rest' else []
+  | _, _ => []
+
+private def trailing (count : Nat) (lines : List String) : List String :=
+  lines.drop (lines.length - min count lines.length)
+
+private def fixItDiffLines (config : RenderConfig) (source updated : Source) : List DiffLine :=
+  let oldLines := (Source.lines source).map (·.text)
+  let newLines := (Source.lines updated).map (·.text)
+  if oldLines == newLines then []
+  else
+    let shared := commonPrefix oldLines newLines
+    let oldRest := oldLines.drop shared.length
+    let newRest := newLines.drop shared.length
+    let suffix := (commonPrefix oldRest.reverse newRest.reverse).reverse
+    let oldChanged := oldRest.take (oldRest.length - suffix.length)
+    let newChanged := newRest.take (newRest.length - suffix.length)
+    let before := (trailing config.contextLines shared).map DiffLine.context
+    let after := (suffix.take config.contextLines).map DiffLine.context
+    before ++ oldChanged.map DiffLine.removed ++ newChanged.map DiffLine.added ++ after
+
+private def fixItStyle (configured : Option Style) (fallback : Style) : Style :=
+  configured.getD fallback
+
+private def fitDiffLine (config : RenderConfig) (line : Text) : Text :=
+  Layout.truncate config.width line
+
+private def renderDiffLine (scheme : ColorScheme) (config : RenderConfig) : DiffLine → Text
+  | .context text =>
+      fitDiffLine config <| Text.styled
+        (config.fixIt.contextPrefix ++ Layout.expandTabs config.tabWidth text)
+        (fixItStyle config.fixIt.contextStyle (Style.fg scheme.comment))
+  | .removed text =>
+      fitDiffLine config <| Text.styled
+        (config.fixIt.removedPrefix ++ Layout.expandTabs config.tabWidth text)
+        (fixItStyle config.fixIt.removedStyle
+          (Style.fg scheme.background <+> Style.bg scheme.red))
+  | .added text =>
+      fitDiffLine config <| Text.styled
+        (config.fixIt.addedPrefix ++ Layout.expandTabs config.tabWidth text)
+        (fixItStyle config.fixIt.addedStyle
+          (Style.fg scheme.background <+> Style.bg scheme.green))
+
+private def renderFixIt (scheme : ColorScheme) (config : RenderConfig)
+    (source : Source) (fixIt : FixIt) : Text :=
+  match Source.applyFixIt source fixIt with
+  | none => Text.empty
+  | some updated =>
+      let lines := fixItDiffLines config source updated
+      if lines.isEmpty then Text.empty
+      else
+        let title := if fixIt.message.isEmpty then config.fixIt.heading
+          else config.fixIt.heading ++ config.fixIt.messageSeparator ++ fixIt.message
+        let heading := if title.isEmpty then Text.empty
+          else Text.styled title (fixItStyle config.fixIt.headingStyle (Style.fg scheme.green))
+        Layout.joinLines ([heading] ++ lines.map (renderDiffLine scheme config))
+
+private def renderFixIts (sources : Sources) (scheme : ColorScheme) (config : RenderConfig)
+    (diagnostic : Diagnostic) : List Text :=
+  diagnostic.fixIts.filterMap fun fixIt =>
+    match sources[fixIt.span.source]? with
+    | none => none
+    | some source =>
+        let rendered := renderFixIt scheme config source fixIt
+        if rendered.segments.isEmpty then none else some rendered
+
 private def renderLine (scheme : ColorScheme) (config : RenderConfig) (line : Line)
     (numberWidth : Nat) : Text :=
   let available := max 1 (config.width - numberWidth - 3)
@@ -227,8 +302,9 @@ def render (sources : Sources) (diagnostic : Diagnostic) (config : RenderConfig 
     (scheme : ColorScheme := ColorScheme.catppuccin) : Text :=
   let ids := uniqueIds diagnostic.labels
   let sourcesText := ids.map (renderSource sources scheme config diagnostic)
+  let fixItsText := renderFixIts sources scheme config diagnostic
   Layout.joinLines
-    ([renderHeader scheme diagnostic] ++ sourcesText ++ renderNotes scheme diagnostic)
+    ([renderHeader scheme diagnostic] ++ sourcesText ++ fixItsText ++ renderNotes scheme diagnostic)
 
 /-- Render diagnostics in input order, separated by a blank line. -/
 def renderMany (sources : Sources) (diagnostics : List Diagnostic) (config : RenderConfig := {})

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11
+
+- Add byte-ranged fix-it edits with configurable removed, added, and context rendering.
+- Use scheme-derived red and green backgrounds for default removed and added lines.
+- Add executable, machine-checked, README, and demo coverage for fix-it output.
+
 ## 0.1.8
 
 - Underline only severity words such as `error`, `note`, and `help`, leaving codes, punctuation,

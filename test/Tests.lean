@@ -17,6 +17,9 @@ private def source : Sources :=
 private def linkedSource : Sources :=
   #[Source.named "input.txt" "a\tb\n界e\u0301\nlast" |>.withUri "file:///tmp/input.txt"]
 
+private def fixSource : Sources :=
+  #[Source.named "input.txt" "timeout = 2x"]
+
 private def simple : Diagnostic :=
   (Diagnostic.error "bad input")
     |>.withCode "E1"
@@ -28,6 +31,11 @@ private def ranged : Diagnostic :=
     |>.withLabel (Label.secondary (Span.range 0 4 8) "related text")
     |>.withNote "this is only a warning"
     |>.withHelp "remove the extra value"
+
+private def fixItDiagnostic : Diagnostic :=
+  (Diagnostic.error "invalid duration")
+    |>.withLabel (Label.primary (Span.range 0 10 12) "expected a duration")
+    |>.withFixIt { span := Span.range 0 10 12, replacement := "2m", message := "use minutes" }
 
 private def many : List Diagnostic := [simple, ranged]
 
@@ -56,7 +64,16 @@ private def invalidUtf8 : Source :=
   Source.fromBytes "broken.txt" (ByteArray.mk #[0x66, 0x80, 0x6F])
 
 private def customScheme : ColorScheme :=
-  { ColorScheme.catppuccin with red := .rgb 255 126 95 }
+  { ColorScheme.catppuccin with red := .rgb 255 126 95, green := .rgb 40 200 80 }
+
+private def fixItConfig : RenderConfig :=
+  { contextLines := 0
+    , fixIt :=
+      { heading := "edit"
+        , messageSeparator := " => "
+        , removedPrefix := "old: "
+        , addedPrefix := "new: "
+        , contextPrefix := "same: " } }
 
 private def plain (diagnostic : Diagnostic) : String :=
   (render source diagnostic { width := 80 }).plainText
@@ -68,6 +85,10 @@ private def renderOne (source : Source) (diagnostic : Diagnostic)
 private def checks : List (Option String) :=
   [ check "point span has zero length" (Span.length (Span.point 0 4) == 0)
   , check "range span has length" (Span.length (Span.range 0 2 5) == 3)
+  , check "fix-it applies UTF-8 byte offsets"
+      (let source := Source.named "example" "a界b"
+       let fixIt : FixIt := { span := Span.range 0 1 4, replacement := "x" }
+       (Source.applyFixIt source fixIt).map (·.text) == some "axb")
   , check "source has three lines" ((Source.lines (source[0]!)).length == 3)
   , check "simple title is rendered" ((plain simple).contains "bad input")
   , check "diagnostic code is rendered" ((plain simple).contains "[E1]")
@@ -135,6 +156,36 @@ private def checks : List (Option String) :=
       ((render #[] (Diagnostic.note "hint")).plainText.startsWith "note")
   , check "help severity is rendered"
       ((render #[] (Diagnostic.help "usage")).plainText.startsWith "help")
+  , check "fix-it renders configured markers and message"
+      (let output := (render fixSource fixItDiagnostic fixItConfig).plainText
+       output.contains "edit => use minutes" &&
+         output.contains "old: timeout = 2x" && output.contains "new: timeout = 2m")
+  , check "fix-it colors come from the supplied scheme"
+      (let output := Text.render RenderTarget.trueColor
+          (render fixSource fixItDiagnostic fixItConfig customScheme)
+       output.contains "48;2;255;126;95" && output.contains "48;2;40;200;80")
+  , check "fix-it styles accept explicit overrides"
+      (let config := { fixItConfig with
+        fixIt := { fixItConfig.fixIt with headingStyle := some Style.reverse } }
+       let output := Text.render RenderTarget.ansi16
+         (render fixSource fixItDiagnostic config)
+       output.contains "\u001b[7m")
+  , check "fix-it renders multiline replacements"
+      (let sources := #[Source.named "example" "one\nold\nthree"]
+       let diagnostic := (Diagnostic.error "bad").withFixIt
+         { span := Span.range 0 4 7, replacement := "new\nline" }
+       let output := (render sources diagnostic { contextLines := 0 }).plainText
+       output.contains "- old" && output.contains "+ new" && output.contains "+ line")
+  , check "fix-it respects configured width"
+      (let sources := #[Source.named "example" "old line with tail"]
+       let diagnostic := (Diagnostic.error "bad").withFixIt
+         { span := Span.range 0 0 3, replacement := "new line with tail" }
+       let output := (render sources diagnostic { width := 10, contextLines := 0 }).plainText
+       output.contains "- old lin" && !output.contains "tail")
+  , check "invalid fix-it is ignored"
+      (let diagnostic := (Diagnostic.error "bad").withFixIt
+          { span := Span.range 0 100 101, replacement := "x" }
+       !(render source diagnostic { contextLines := 0 }).plainText.contains "suggested change")
   , check "width truncation drops the tail"
       (let output := (render wideSource wide { width := 32, contextLines := 0 }).plainText
        output.contains "timeout = 2x" && !output.contains "wider than the terminal")

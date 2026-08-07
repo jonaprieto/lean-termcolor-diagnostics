@@ -4,7 +4,7 @@ import sys
 
 allowed = {"propext", "Classical.choice", "Quot.sound"}
 native_axioms = {"Lean.ofReduceBool", "Lean.trustCompiler"}
-native = {"line_split_example"}
+native = {"line_split_example", "fix_it_replaces_utf8_bytes", "fix_it_render_example"}
 
 
 def is_native_decide_axiom(decl, axiom):
