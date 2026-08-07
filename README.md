@@ -7,8 +7,6 @@
 Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic renders to
 `TermColor.Text`; terminal IO remains outside the package.
 
-Version: `v0.1.11`
-
 ## Install
 
 ```lean
