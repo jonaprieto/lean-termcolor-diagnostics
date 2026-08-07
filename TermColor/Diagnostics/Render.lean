@@ -70,7 +70,7 @@ private structure SourceView where
 
 private def sourceView (source : Source) : SourceView :=
   let bytes := source.utf8Bytes
-  { source, bytes, lines := Source.linesFromBytes bytes }
+  { source, bytes, lines := Source.lines source }
 
 private def lineAt (view : SourceView) (offset : Nat) : Option Line :=
   let safeOffset := min offset view.bytes.size
