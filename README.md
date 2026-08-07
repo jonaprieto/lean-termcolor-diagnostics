@@ -155,8 +155,7 @@ parser error accumulation while adding source-annotated output. See the
 lake build TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo
 lake exe tests
 lake exe detect plain
-python3 scripts/check-axioms.py
-python3 scripts/style-check.py
+pre-commit run --all-files
 lake exe demo
 ~~~
 
