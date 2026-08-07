@@ -4,36 +4,27 @@
 [![Lean 4](https://img.shields.io/badge/Lean%204-library-5f5f5f)](lean-toolchain)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
-Source-annotated diagnostics and rich error reporting for Lean 4 command-line tools.
+Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic renders to
+`TermColor.Text`; terminal IO remains outside the package.
 
-termcolor-diagnostics keeps diagnostic data separate from terminal IO. A diagnostic contains
-source spans, labels, fix-it edits, notes, and help text; rendering returns TermColor.Text, so callers can
-choose plain output, ANSI-16, ANSI-256, or true color with the existing termcolor stack.
+Version: `v0.1.11`
 
 ## Install
 
-Add the package to `lakefile.lean`:
-
-~~~lean
-require «termcolor-diagnostics» from git
-  "https://github.com/jonaprieto/lean-termcolor-diagnostics.git"
-  @ "v0.1.11"
-~~~
+```lean
+require termcolor-diagnostics from git
+  "https://github.com/jonaprieto/lean-termcolor-diagnostics.git" @ "v0.1.11"
+```
 
 ## Quick start
 
-~~~lean
+```lean
 import TermColor.Diagnostics
 import TermColor.Detect
 
-open TermColor
-open TermColor.Diagnostics
+open TermColor TermColor.Diagnostics
 
-def sources : Sources :=
-  #[Source.named "settings.toml" "timeout = 2x"]
-
-def clickableSources : Sources :=
-  #[Source.named "settings.toml" "timeout = 2x" |>.withUri "file:///tmp/settings.toml"]
+def sources : Sources := #[Source.named "settings.toml" "timeout = 2x"]
 
 def diagnostic : Diagnostic :=
   (Diagnostic.error "invalid duration")
@@ -43,138 +34,24 @@ def diagnostic : Diagnostic :=
     |>.withHelp "try timeout = 2m"
 
 #eval Text.render RenderTarget.plain (render sources diagnostic)
+```
 
--- The diagnostics default enables source links when the target supports OSC-8.
-#eval Text.render (RenderTarget.withHyperlinks RenderTarget.trueColor)
-  (render clickableSources diagnostic)
-~~~
+The model supports source spans, primary and secondary labels, notes, help, fix-its, multiple
+files, configurable context and width, color schemes, plain output, and optional OSC-8 links.
+Offsets are UTF-8 byte positions, matching byte-oriented parsers such as Grip.
 
-The pure renderer produces a source annotation such as:
+## Build
 
-~~~text
-error [E1001]: invalid duration
-  ╰─> settings.toml:1:11
-  │
-1 │ timeout = 2x
-  │           ^^ expected a duration
-
-suggested change
-- timeout = 2x
-+ timeout = 2m
-help: try timeout = 2m
-~~~
-
-For terminal output, pass the returned Text to TermColor.print or
-TermColor.Terminal.writeText. Terminal detection remains outside this package.
-
-## Model
-
-Spans use UTF-8 byte offsets and half-open ranges. This matches byte-oriented parsers such as
-grip and avoids repeatedly converting parser positions into line and column pairs.
-
-~~~lean
-structure Source where
-  name : String
-  text : String
-
-structure Span where
-  source : SourceId
-  start : Nat
-  stop : Nat
-
-structure Label where
-  span : Span
-  kind : LabelKind
-  message : String
-
-structure FixIt where
-  span : Span
-  replacement : String
-  message : String := ""
-~~~
-
-Line numbers and display columns are derived while rendering. Tabs use configurable tab stops;
-Unicode display width is supplied by termcolor-layout. Byte-oriented callers can use
-`Source.fromBytes`; invalid UTF-8 is rendered as `�` instead of aborting the diagnostic.
-
-`RenderConfig.fixIt` controls the heading, prefixes, and optional styles for suggested edits.
-When a style override is absent, removed and added lines use scheme-derived red and green
-backgrounds, while context and heading colors come from the caller's `ColorScheme`.
-
-## Features
-
-- primary and secondary labels;
-- configurable fix-it edit rendering with removed, added, and context lines;
-- single-line and multiline source spans;
-- multiple source files and diagnostics;
-- configurable width, context lines, tab width, and ASCII/Unicode decorations;
-- ANSI-16, ANSI-256, true-color, and plain render targets;
-- color-scheme-highlighted filenames and default OSC-8 source locations;
-- notes and help messages;
-- semantic palettes from ColorScheme.catppuccin, dracula, and monokai;
-- CRLF, empty-source, EOF, point-span, and invalid-UTF-8 handling;
-- pure Text output with existing ANSI and non-TTY policies;
-- separate machine-checked properties and executable rendering tests.
-
-## Package stack
-
-~~~text
-termcolor
-  -> termcolor-layout
-      -> termcolor-diagnostics
-      -> termcolor-widgets
-  -> termcolor-terminal
-  -> argus
-~~~
-
-The diagnostics renderer depends on styled text and layout, not terminal IO. argus uses it for
-structured command-line errors, while grip remains independent of terminal packages.
-
-The demo is a feature gallery: `lake exe demo` shows errors, warnings, notes, help severity,
-primary and secondary labels, configurable fix-it diffs, multiline and multi-source spans, tabs,
-CJK and combining text, CRLF, empty and EOF spans, invalid UTF-8 fallback, width truncation, ANSI-16/256/true-color
-targets, custom palettes, batched diagnostics, plain output, clickable OSC-8 locations, and
-auto-detected output. The
-`detect` executable exercises terminal policy independently:
-
-~~~sh
-env -u NO_COLOR -u FORCE_COLOR TERM=xterm lake exe detect plain
-env -u NO_COLOR FORCE_COLOR=1 TERM=xterm lake exe detect ansi16
-env -u NO_COLOR FORCE_COLOR=1 TERM=xterm-256color lake exe detect ansi256
-env -u NO_COLOR FORCE_COLOR=1 TERM=xterm COLORTERM=truecolor lake exe detect truecolor
-env -u NO_COLOR -u FORCE_COLOR TERM=dumb lake exe detect plain
-~~~
-
-Argus consumes the same structured model through its `Help.renderErrors` integration, preserving
-parser error accumulation while adding source-annotated output. See the
-[Argus demo](https://github.com/jonaprieto/lean-argus/blob/main/examples/Demo.lean).
-
-## Development
-
-~~~sh
+```sh
 lake build TermColor.Diagnostics TermColor.Diagnostics.Properties tests detect readme demo
 lake exe tests
-lake exe detect plain
-pre-commit run --all-files
 lake exe demo
-~~~
+```
 
-TermColor.Diagnostics.Properties is separate from the runtime package. The properties package
-checks span and source-indexing laws; executable tests cover the complete visual layout and
-Unicode cases. The CI workflow runs the same audit on every push and pull request. The detailed
-coverage checklist is in [docs/COVERAGE.md](docs/COVERAGE.md). CI uses the repository secret
-`ECOSYSTEM_READ_TOKEN` when present to clone the private `lean-termcolor` and
-`lean-termcolor-layout` repositories; it falls back to the default GitHub token for public forks.
+## Related projects
 
-## Limitations
-
-The current release does not include JSON/SARIF output or syntax highlighting.
-OSC-8 links require an absolute URI and a terminal that supports OSC-8; plain and ordinary ANSI
-targets keep the location readable while suppressing the hyperlink sequence.
-Display width is code-point based: combining marks and common wide characters are handled, but
-full grapheme-cluster shaping and terminal-specific font behavior are outside the layout layer.
-The source-span convention is stable so these features can be added without changing parser
-positions.
+[`grip-diagnostics`](https://github.com/jonaprieto/lean-grip-diagnostics) adapts Grip parse errors;
+[`argus`](https://github.com/jonaprieto/lean-argus) uses the renderer for command-line errors.
 
 ## License
 
