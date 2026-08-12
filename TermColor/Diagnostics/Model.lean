@@ -152,6 +152,42 @@ def withHelp (diagnostic : Diagnostic) (help : String) : Diagnostic :=
 
 end Diagnostic
 
+structure ReportField where
+  label : String
+  value : String
+  deriving BEq, DecidableEq, Repr
+
+structure Report where
+  severity : Severity := .error
+  code : Option String := none
+  title : String
+  fields : List ReportField := []
+  notes : List String := []
+  helps : List String := []
+  deriving BEq, DecidableEq, Repr
+
+namespace Report
+
+def error (title : String) : Report := { title }
+
+def warning (title : String) : Report := { severity := .warning, title }
+
+def info (title : String) : Report := { severity := .info, title }
+
+def withCode (report : Report) (code : String) : Report :=
+  { report with code := some code }
+
+def withField (report : Report) (label value : String) : Report :=
+  { report with fields := report.fields ++ [{ label, value }] }
+
+def withNote (report : Report) (note : String) : Report :=
+  { report with notes := report.notes ++ [note] }
+
+def withHelp (report : Report) (help : String) : Report :=
+  { report with helps := report.helps ++ [help] }
+
+end Report
+
 /-- Textual choices for rendering suggested source edits. Colors come from the supplied scheme. -/
 structure FixItRenderConfig where
   heading : String := "suggested change"

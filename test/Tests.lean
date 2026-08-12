@@ -56,6 +56,14 @@ private def wide : Diagnostic :=
   (Diagnostic.error "line is too wide")
     |>.withLabel (Label.primary (Span.range 0 10 12) "invalid value")
 
+private def httpReport : Report :=
+  (Report.error "online prover request failed")
+    |>.withCode "http.transport"
+    |>.withField "transport" "curl"
+    |>.withField "status" "503"
+    |>.withField "artifacts" ".oatp/run-123"
+    |>.withHelp "inspect response.html"
+
 private def crlf : Source := Source.named "windows.toml" "first = 1\r\nsecond = 2"
 
 private def empty : Source := Source.named "empty.toml" ""
@@ -176,6 +184,14 @@ private def checks : List (Option String) :=
          { span := Span.range 0 4 7, replacement := "new\nline" }
        let output := (render sources diagnostic { contextLines := 0 }).plainText
        output.contains "- old" && output.contains "+ new" && output.contains "+ line")
+  , check "source-free report renders fields"
+      (let output := (renderReport httpReport).plainText
+       output.contains "error [http.transport]: online prover request failed" &&
+         output.contains "transport  curl" && output.contains "status     503" &&
+         output.contains "help: inspect response.html")
+  , check "source-free report respects width"
+      (let lines := (renderReport httpReport { width := 24 }).plainText.splitOn "\n"
+       lines.all (fun line => line.length ≤ 24))
   , check "fix-it respects configured width"
       (let sources := #[Source.named "example" "old line with tail"]
        let diagnostic := (Diagnostic.error "bad").withFixIt
