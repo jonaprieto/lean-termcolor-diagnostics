@@ -53,7 +53,11 @@ lake exe demo
 ## Related projects
 
 [`grip-diagnostics`](https://github.com/jonaprieto/lean-grip-diagnostics) adapts Grip parse errors;
-[`argus`](https://github.com/jonaprieto/lean-argus) uses the renderer for command-line errors.
+[`argus`](https://github.com/jonaprieto/lean-argus) uses the renderer for command-line errors;
+[`eventb-lean`](https://github.com/jonaprieto/eventb-lean),
+[`lean-calc-chat`](https://github.com/jonaprieto/lean-calc-chat),
+[`termcolor-layout`](https://github.com/jonaprieto/lean-termcolor-layout), and
+[`oatp`](https://github.com/jonaprieto/oatp) consume it directly.
 
 ## License
 
