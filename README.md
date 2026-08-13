@@ -1,7 +1,9 @@
 # termcolor-diagnostics
 
 [![CI](https://github.com/jonaprieto/lean-termcolor-diagnostics/actions/workflows/ci.yml/badge.svg)](https://github.com/jonaprieto/lean-termcolor-diagnostics/actions/workflows/ci.yml)
-[![Lean 4](https://img.shields.io/badge/Lean%204-library-5f5f5f)](lean-toolchain)
+[![Release](https://img.shields.io/github/v/release/jonaprieto/lean-termcolor-diagnostics?display_name=tag&sort=semver)](https://github.com/jonaprieto/lean-termcolor-diagnostics/releases)
+[![Lean 4](https://img.shields.io/badge/Lean%204-v4.33.0-6f42c1)](lean-toolchain)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-4c8bf5)](https://jonaprieto.github.io/lean-termcolor-diagnostics/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
 Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic renders to
@@ -11,7 +13,7 @@ Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic re
 
 ```lean
 require termcolor-diagnostics from git
-  "https://github.com/jonaprieto/lean-termcolor-diagnostics.git" @ "v0.1.11"
+  "https://github.com/jonaprieto/lean-termcolor-diagnostics.git" @ "v0.1.14"
 ```
 
 ## Quick start
