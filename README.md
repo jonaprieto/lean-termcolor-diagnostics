@@ -9,6 +9,8 @@
 Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic renders to
 `TermColor.Text`; terminal IO remains outside the package.
 
+<p align="center"><img src="docs/assets/termcolor-diagnostics-1.png" alt="TermColor diagnostics demo" width="480"></p>
+
 ## Install
 
 ```lean
