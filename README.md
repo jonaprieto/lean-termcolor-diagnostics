@@ -1,4 +1,4 @@
-# termcolor-diagnostics
+# lean-termcolor-diagnostics
 
 [![CI](https://github.com/jonaprieto/lean-termcolor-diagnostics/actions/workflows/ci.yml/badge.svg)](https://github.com/jonaprieto/lean-termcolor-diagnostics/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/jonaprieto/lean-termcolor-diagnostics?display_name=tag&sort=semver)](https://github.com/jonaprieto/lean-termcolor-diagnostics/releases)
@@ -10,6 +10,18 @@ Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic re
 `TermColor.Text`; terminal IO remains outside the package.
 
 <p align="center"><img src="docs/assets/termcolor-diagnostics-1.png" alt="TermColor diagnostics demo" width="480"></p>
+
+## Status and review
+
+These libraries are actively evolving and are developed with AI assistance and human review.
+CI and machine-checked proofs provide useful evidence, but do not guarantee correctness,
+soundness, portability, performance, or suitability for every use case. Validate behavior
+and assumptions before relying on a release.
+
+Reviewer feedback is welcome, especially on correctness, proofs, API design, usability,
+portability, performance, documentation, and real-world use. Please use the
+[issue tracker](https://github.com/jonaprieto/lean-termcolor-diagnostics/issues) or open a PR with a
+reproducible example and the expected behavior.
 
 ## Install
 
