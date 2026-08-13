@@ -28,6 +28,9 @@ private def repeatChar (character : Char) (count : Nat) : String :=
 private def padLeft (width : Nat) (text : String) : String :=
   spaces (width - text.length) ++ text
 
+private def padRight (width : Nat) (text : String) : String :=
+  text ++ spaces (width - text.length)
+
 private def severityName : Severity → String
   | .error => "error"
   | .warning => "warning"
@@ -314,5 +317,43 @@ def renderMany (sources : Sources) (diagnostics : List Diagnostic) (config : Ren
     | [diagnostic] => diagnostic
     | diagnostic :: rest => diagnostic ++ Text.plain "\n\n" ++ join rest
   join (diagnostics.map fun diagnostic => render sources diagnostic config scheme)
+
+private def reportFieldWidth (fields : List ReportField) : Nat :=
+  fields.foldl (fun width field => max width field.label.length) 0
+
+private def renderReportHeader (scheme : ColorScheme) (config : RenderConfig)
+    (report : Report) : Text :=
+  let code := report.code.map (fun value => s!" [{value}]") |>.getD ""
+  let style := severityStyle scheme report.severity
+  let header := Text.styled (severityName report.severity) (Style.underline <+> style) ++
+    Text.styled code style ++ Text.plain (": " ++ report.title)
+  Layout.truncate config.width header
+
+private def renderReportField (scheme : ColorScheme) (config : RenderConfig)
+    (labelWidth : Nat) (field : ReportField) : Text :=
+  let label := Text.styled (padRight labelWidth field.label)
+    (Style.bold <+> Style.fg scheme.cyan)
+  let value := Text.plain "  " ++ label ++ Text.plain "  " ++ Text.plain field.value
+  Layout.truncate config.width value
+
+private def renderReportMeta (scheme : ColorScheme) (config : RenderConfig)
+    (report : Report) : List Text :=
+  let notes := report.notes.map fun note =>
+    Layout.truncate config.width <| Text.styled "note"
+      (Style.underline <+> Style.fg scheme.comment) ++ Text.plain ": " ++ Text.plain note
+  let helps := report.helps.map fun help =>
+    Layout.truncate config.width <| Text.styled "help"
+      (Style.underline <+> Style.bold <+> Style.fg scheme.green) ++
+        Text.plain ": " ++ Text.plain help
+  notes ++ helps
+
+/-- Render a source-free report with aligned labeled fields. -/
+def renderReport (report : Report) (config : RenderConfig := {})
+    (scheme : ColorScheme := ColorScheme.catppuccin) : Text :=
+  let width := max 1 config.width
+  let fieldWidth := reportFieldWidth report.fields
+  let fields := report.fields.map (renderReportField scheme { config with width } fieldWidth)
+  Layout.joinLines ([renderReportHeader scheme { config with width } report] ++ fields ++
+    renderReportMeta scheme { config with width } report)
 
 end TermColor.Diagnostics

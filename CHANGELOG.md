@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13
+
+- Add source-free structured reports with aligned fields for transport and service failures.
+
 ## 0.1.11
 
 - Add byte-ranged fix-it edits with configurable removed, added, and context rendering.

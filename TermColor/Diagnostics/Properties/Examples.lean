@@ -17,6 +17,11 @@ theorem diagnostic_code_example :
     ((Diagnostic.error "bad").withCode "E1").code = some "E1" := by
   rfl
 
+theorem report_field_example :
+    ((Report.error "request failed").withField "status" "503").fields =
+      [{ label := "status", value := "503" }] := by
+  rfl
+
 theorem fix_it_render_example :
     let source := #[Source.named "config.toml" "timeout = 2x"]
     let diagnostic := (Diagnostic.error "invalid duration").withFixIt
