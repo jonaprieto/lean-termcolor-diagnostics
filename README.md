@@ -9,6 +9,11 @@
 Pure source-annotated diagnostics for Lean 4 command-line tools. A diagnostic renders to
 `TermColor.Text`; terminal IO remains outside the package.
 
+## Problem
+
+Command-line tools need precise source context for errors without taking on terminal IO or a
+particular output policy.
+
 <p align="center"><img src="docs/assets/termcolor-diagnostics-1.png" alt="TermColor diagnostics demo" width="480"></p>
 
 ## Development
@@ -59,7 +64,6 @@ lake exe demo
 
 [`grip-diagnostics`](https://github.com/jonaprieto/lean-grip-diagnostics) adapts Grip parse errors;
 [`argus`](https://github.com/jonaprieto/lean-argus) uses the renderer for command-line errors;
-[`eventb-lean`](https://github.com/jonaprieto/eventb-lean),
 [`lean-calc-chat`](https://github.com/jonaprieto/lean-calc-chat),
 [`termcolor-layout`](https://github.com/jonaprieto/lean-termcolor-layout), and
 [`oatp`](https://github.com/jonaprieto/oatp) consume it directly.
