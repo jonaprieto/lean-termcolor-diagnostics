@@ -33,10 +33,15 @@ def named (name text : String) : Source := { name, text }
 def withUri (source : Source) (uri : String) : Source := { source with uri := some uri }
 
 /-- Build a source from raw bytes, replacing invalid UTF-8 with `�` when rendered. -/
-def fromBytes (name : String) (bytes : ByteArray) : Source :=
+def fromBytes
+    (name : String)
+    (bytes : ByteArray)
+    : Source :=
   { name, text := (String.fromUTF8? bytes).getD "�", rawBytes := some bytes.data }
 
-def utf8Bytes (source : Source) : ByteArray :=
+def utf8Bytes
+    (source : Source)
+    : ByteArray :=
   match source.rawBytes with
   | some bytes => ByteArray.mk bytes
   | none => source.text.toUTF8
@@ -51,10 +56,16 @@ structure Span where
 
 namespace Span
 
-def point (source : SourceId) (offset : Nat) : Span :=
+def point
+    (source : SourceId)
+    (offset : Nat)
+    : Span :=
   { source, start := offset, stop := offset }
 
-def range (source : SourceId) (start stop : Nat) : Span :=
+def range
+    (source : SourceId)
+    (start stop : Nat)
+    : Span :=
   { source, start, stop }
 
 def length (span : Span) : Nat := span.stop - span.start
@@ -82,10 +93,16 @@ structure Label where
 
 namespace Label
 
-def primary (span : Span) (message : String := "") : Label :=
+def primary
+    (span : Span)
+    (message : String := "")
+    : Label :=
   { span, kind := .primary, message }
 
-def secondary (span : Span) (message : String := "") : Label :=
+def secondary
+    (span : Span)
+    (message : String := "")
+    : Label :=
   { span, kind := .secondary, message }
 
 end Label
@@ -100,7 +117,10 @@ structure FixIt where
 namespace Source
 
 /-- Apply a byte-ranged fix-it, returning none when its span is outside the source. -/
-def applyFixIt (source : Source) (fixIt : FixIt) : Option Source :=
+def applyFixIt
+    (source : Source)
+    (fixIt : FixIt)
+    : Option Source :=
   let bytes := source.utf8Bytes
   if fixIt.span.start > fixIt.span.stop || fixIt.span.stop > bytes.size then none
   else
@@ -135,19 +155,34 @@ def note (title : String) : Diagnostic := { severity := .note, title }
 
 def help (title : String) : Diagnostic := { severity := .help, title }
 
-def withCode (diagnostic : Diagnostic) (code : String) : Diagnostic :=
+def withCode
+    (diagnostic : Diagnostic)
+    (code : String)
+    : Diagnostic :=
   { diagnostic with code := some code }
 
-def withLabel (diagnostic : Diagnostic) (label : Label) : Diagnostic :=
+def withLabel
+    (diagnostic : Diagnostic)
+    (label : Label)
+    : Diagnostic :=
   { diagnostic with labels := diagnostic.labels ++ [label] }
 
-def withFixIt (diagnostic : Diagnostic) (fixIt : FixIt) : Diagnostic :=
+def withFixIt
+    (diagnostic : Diagnostic)
+    (fixIt : FixIt)
+    : Diagnostic :=
   { diagnostic with fixIts := diagnostic.fixIts ++ [fixIt] }
 
-def withNote (diagnostic : Diagnostic) (note : String) : Diagnostic :=
+def withNote
+    (diagnostic : Diagnostic)
+    (note : String)
+    : Diagnostic :=
   { diagnostic with notes := diagnostic.notes ++ [note] }
 
-def withHelp (diagnostic : Diagnostic) (help : String) : Diagnostic :=
+def withHelp
+    (diagnostic : Diagnostic)
+    (help : String)
+    : Diagnostic :=
   { diagnostic with helps := diagnostic.helps ++ [help] }
 
 end Diagnostic
@@ -174,16 +209,28 @@ def warning (title : String) : Report := { severity := .warning, title }
 
 def info (title : String) : Report := { severity := .info, title }
 
-def withCode (report : Report) (code : String) : Report :=
+def withCode
+    (report : Report)
+    (code : String)
+    : Report :=
   { report with code := some code }
 
-def withField (report : Report) (label value : String) : Report :=
+def withField
+    (report : Report)
+    (label value : String)
+    : Report :=
   { report with fields := report.fields ++ [{ label, value }] }
 
-def withNote (report : Report) (note : String) : Report :=
+def withNote
+    (report : Report)
+    (note : String)
+    : Report :=
   { report with notes := report.notes ++ [note] }
 
-def withHelp (report : Report) (help : String) : Report :=
+def withHelp
+    (report : Report)
+    (help : String)
+    : Report :=
   { report with helps := report.helps ++ [help] }
 
 end Report
