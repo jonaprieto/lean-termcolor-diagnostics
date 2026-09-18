@@ -9,10 +9,12 @@ import TermColor.Detect
 open TermColor
 open TermColor.Diagnostics
 
-def readmeSource : Sources :=
+def readmeSource
+    : Sources :=
   #[Source.named "settings.toml" "timeout = 2x"]
 
-def readmeDiagnostic : Diagnostic :=
+def readmeDiagnostic
+    : Diagnostic :=
   (Diagnostic.error "invalid duration")
     |>.withCode "E1001"
     |>.withLabel (Label.primary (Span.range 0 10 12) "expected a duration")

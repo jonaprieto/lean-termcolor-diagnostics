@@ -23,7 +23,10 @@ structure Line where
 
 namespace Source
 
-private def lineRanges (bytes : ByteArray) : List (Nat × Nat) :=
+private
+def lineRanges
+    (bytes : ByteArray)
+    : List (Nat × Nat) :=
   let rec go (index start : Nat) (ranges : List (Nat × Nat)) : List (Nat × Nat) :=
     if index >= bytes.size then
       (start, bytes.size) :: ranges
@@ -35,7 +38,10 @@ private def lineRanges (bytes : ByteArray) : List (Nat × Nat) :=
   termination_by bytes.size - index
   (go 0 0 []).reverse
 
-private def decodeLossy (bytes : ByteArray) : String :=
+private
+def decodeLossy
+    (bytes : ByteArray)
+    : String :=
   let rec go (index : Nat) (characters : List Char) : String :=
     if index < bytes.size then
       match bytes.utf8DecodeChar? index with
@@ -50,27 +56,38 @@ private def decodeLossy (bytes : ByteArray) : String :=
     next => omega
   go 0 []
 
-private def decode (bytes : ByteArray) (start stop : Nat) : String :=
+private
+def decode
+    (bytes : ByteArray)
+    (start stop : Nat)
+    : String :=
   match String.fromUTF8? (bytes.extract start stop) with
   | some text => text
   | none => "�"
 
 /-- Source lines with one-based line numbers and UTF-8 byte boundaries. -/
-def linesFromBytes (bytes : ByteArray) : List Line :=
+def linesFromBytes
+    (bytes : ByteArray)
+    : List Line :=
   (lineRanges bytes).mapIdx fun index (start, stop) =>
     { number := index + 1
       byteStart := start
       byteEnd := stop
       text := decode bytes start stop }
 
-def lines (source : Source) : List Line :=
+def lines
+    (source : Source)
+    : List Line :=
   linesFromBytes source.utf8Bytes
 
 /-- Decode a byte slice while replacing malformed UTF-8 one byte at a time. -/
 def decodePrefix (bytes : ByteArray) : String := decodeLossy bytes
 
 /-- Return the line containing an offset, clamping EOF to the final line. -/
-def lineAt (source : Source) (offset : Nat) : Option Line :=
+def lineAt
+    (source : Source)
+    (offset : Nat)
+    : Option Line :=
   let safeOffset := min offset source.utf8Bytes.size
   (lines source).find? fun line => line.byteStart ≤ safeOffset && safeOffset ≤ line.byteEnd
 

@@ -8,55 +8,81 @@ import TermColor.Diagnostics
 open TermColor
 open TermColor.Diagnostics
 
-private def check (name : String) (condition : Bool) : Option String :=
+private
+def check
+    (name : String)
+    (condition : Bool)
+    : Option String :=
   if condition then none else some name
 
-private def source : Sources :=
+private
+def source
+    : Sources :=
   #[Source.named "input.txt" "a\tb\n界e\u0301\nlast"]
 
-private def linkedSource : Sources :=
+private
+def linkedSource
+    : Sources :=
   #[Source.named "input.txt" "a\tb\n界e\u0301\nlast" |>.withUri "file:///tmp/input.txt"]
 
-private def fixSource : Sources :=
+private
+def fixSource
+    : Sources :=
   #[Source.named "input.txt" "timeout = 2x"]
 
-private def simple : Diagnostic :=
+private
+def simple
+    : Diagnostic :=
   (Diagnostic.error "bad input")
     |>.withCode "E1"
     |>.withLabel (Label.primary (Span.point 0 2) "unexpected character")
 
-private def ranged : Diagnostic :=
+private
+def ranged
+    : Diagnostic :=
   (Diagnostic.warning "suspicious input")
     |>.withLabel (Label.primary (Span.range 0 0 3) "check this")
     |>.withLabel (Label.secondary (Span.range 0 4 8) "related text")
     |>.withNote "this is only a warning"
     |>.withHelp "remove the extra value"
 
-private def fixItDiagnostic : Diagnostic :=
+private
+def fixItDiagnostic
+    : Diagnostic :=
   (Diagnostic.error "invalid duration")
     |>.withLabel (Label.primary (Span.range 0 10 12) "expected a duration")
     |>.withFixIt { span := Span.range 0 10 12, replacement := "2m", message := "use minutes" }
 
 private def many : List Diagnostic := [simple, ranged]
 
-private def gallerySources : Sources :=
+private
+def gallerySources
+    : Sources :=
   #[source[0]!, Source.named "main.lean" "first\n\t界\nlast"]
 
-private def multiline : Diagnostic :=
+private
+def multiline
+    : Diagnostic :=
   (Diagnostic.error "multiline failure")
     |>.withLabel (Label.primary (Span.range 1 0 15) "check this block")
     |>.withLabel (Label.secondary (Span.range 0 0 3) "related input")
 
 private def loaded : Diagnostic := Diagnostic.info "configuration loaded"
 
-private def wideSource : Sources :=
+private
+def wideSource
+    : Sources :=
   #[Source.named "wide.toml" "timeout = 2x and a value wider than the terminal"]
 
-private def wide : Diagnostic :=
+private
+def wide
+    : Diagnostic :=
   (Diagnostic.error "line is too wide")
     |>.withLabel (Label.primary (Span.range 0 10 12) "invalid value")
 
-private def httpReport : Report :=
+private
+def httpReport
+    : Report :=
   (Report.error "online prover request failed")
     |>.withCode "http.transport"
     |>.withField "transport" "curl"
@@ -68,13 +94,19 @@ private def crlf : Source := Source.named "windows.toml" "first = 1\r\nsecond = 
 
 private def empty : Source := Source.named "empty.toml" ""
 
-private def invalidUtf8 : Source :=
+private
+def invalidUtf8
+    : Source :=
   Source.fromBytes "broken.txt" (ByteArray.mk #[0x66, 0x80, 0x6F])
 
-private def customScheme : ColorScheme :=
+private
+def customScheme
+    : ColorScheme :=
   { ColorScheme.catppuccin with red := .rgb 255 126 95, green := .rgb 40 200 80 }
 
-private def fixItConfig : RenderConfig :=
+private
+def fixItConfig
+    : RenderConfig :=
   { contextLines := 0
     , fixIt :=
       { heading := "edit"
@@ -83,14 +115,23 @@ private def fixItConfig : RenderConfig :=
         , addedPrefix := "new: "
         , contextPrefix := "same: " } }
 
-private def plain (diagnostic : Diagnostic) : String :=
+private
+def plain
+    (diagnostic : Diagnostic)
+    : String :=
   (render source diagnostic { width := 80 }).plainText
 
-private def renderOne (source : Source) (diagnostic : Diagnostic)
-    (config : RenderConfig := {}) : Text :=
+private
+def renderOne
+    (source : Source)
+    (diagnostic : Diagnostic)
+    (config : RenderConfig := {})
+    : Text :=
   render #[source] diagnostic config
 
-private def checks : List (Option String) :=
+private
+def checks
+    : List (Option String) :=
   [ check "point span has zero length" (Span.length (Span.point 0 4) == 0)
   , check "range span has length" (Span.length (Span.range 0 2 5) == 3)
   , check "fix-it applies UTF-8 byte offsets"

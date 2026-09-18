@@ -7,7 +7,10 @@ import TermColor.Detect
 
 open TermColor
 
-private def expected : String → Option RenderTarget
+private
+def expected
+    : String →
+      Option RenderTarget
   | "plain" => some .plain
   | "ansi16" => some .ansi16
   | "ansi256" => some .ansi256
