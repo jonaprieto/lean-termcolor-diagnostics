@@ -493,7 +493,8 @@ def render
     (sources : Sources)
     (diagnostic : Diagnostic)
     (config : RenderConfig := {})
-    (scheme : ColorScheme := ColorScheme.catppuccin) : Text :=
+    (scheme : ColorScheme := ColorScheme.catppuccin)
+    : Text :=
   let ids := uniqueIds diagnostic.labels
   let sourcesText := ids.map (renderSource sources scheme config diagnostic)
   let fixItsText := renderFixIts sources scheme config diagnostic
@@ -505,7 +506,8 @@ def renderMany
     (sources : Sources)
     (diagnostics : List Diagnostic)
     (config : RenderConfig := {})
-    (scheme : ColorScheme := ColorScheme.catppuccin) : Text :=
+    (scheme : ColorScheme := ColorScheme.catppuccin)
+    : Text :=
   let rec join : List Text → Text
     | [] => Text.empty
     | [diagnostic] => diagnostic
@@ -561,7 +563,8 @@ def renderReportMeta
 def renderReport
     (report : Report)
     (config : RenderConfig := {})
-    (scheme : ColorScheme := ColorScheme.catppuccin) : Text :=
+    (scheme : ColorScheme := ColorScheme.catppuccin)
+    : Text :=
   let width := max 1 config.width
   let fieldWidth := reportFieldWidth report.fields
   let fields := report.fields.map (renderReportField scheme { config with width } fieldWidth)
