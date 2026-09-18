@@ -17,7 +17,9 @@ def expected
   | "truecolor" => some .trueColor
   | _ => none
 
-def main (argv : List String) : IO UInt32 := do
+def main
+    (argv : List String)
+    : IO UInt32 := do
   let target ← targetWithTty .auto false
   match argv with
   | [caseName] =>
