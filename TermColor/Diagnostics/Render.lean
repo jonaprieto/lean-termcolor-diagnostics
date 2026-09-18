@@ -22,28 +22,32 @@ open scoped TermColor.Style
 private
 def spaces
     (count : Nat)
-    : String :=
+    : String
+    :=
   String.ofList (List.replicate count ' ')
 
 private
 def repeatChar
     (character : Char)
     (count : Nat)
-    : String :=
+    : String
+    :=
   String.ofList (List.replicate count character)
 
 private
 def padLeft
     (width : Nat)
     (text : String)
-    : String :=
+    : String
+    :=
   spaces (width - text.length) ++ text
 
 private
 def padRight
     (width : Nat)
     (text : String)
-    : String :=
+    : String
+    :=
   text ++ spaces (width - text.length)
 
 private
@@ -71,13 +75,15 @@ private
 def severityStyle
     (scheme : ColorScheme)
     (severity : Severity)
-    : Style :=
+    : Style
+    :=
   Style.bold <+> Style.fg (severityColor scheme severity)
 
 private
 def gutterStyle
     (scheme : ColorScheme)
-    : Style :=
+    : Style
+    :=
   Style.fg scheme.comment
 
 private
@@ -85,7 +91,8 @@ def labelStyle
     (scheme : ColorScheme)
     (severity : Severity)
     (kind : LabelKind)
-    : Style :=
+    : Style
+    :=
   match kind with
   | .primary => Style.bold <+> Style.fg (severityColor scheme severity)
   | .secondary => Style.fg scheme.blue
@@ -100,13 +107,15 @@ def decoration
 private
 def gutter
     (unicode : Bool)
-    : String :=
+    : String
+    :=
   if unicode then "│" else "|"
 
 private
 def locationArrow
     (unicode : Bool)
-    : String :=
+    : String
+    :=
   if unicode then "╰─>" else "-->"
 
 private structure SourceView where
@@ -117,7 +126,8 @@ private structure SourceView where
 private
 def sourceView
     (source : Source)
-    : SourceView :=
+    : SourceView
+    :=
   let bytes := source.utf8Bytes
   { source, bytes, lines := Source.lines source }
 
@@ -125,7 +135,8 @@ private
 def lineAt
     (view : SourceView)
     (offset : Nat)
-    : Option Line :=
+    : Option Line
+    :=
   let safeOffset := min offset view.bytes.size
   view.lines.find? fun line => line.byteStart ≤ safeOffset && safeOffset ≤ line.byteEnd
 
@@ -134,7 +145,8 @@ def prefixText
     (view : SourceView)
     (line : Line)
     (offset : Nat)
-    : String :=
+    : String
+    :=
   let stop := min (max offset line.byteStart) line.byteEnd
   Source.decodePrefix (view.bytes.extract line.byteStart stop)
 
@@ -143,14 +155,16 @@ def displayColumn
     (view : SourceView)
     (line : Line)
     (offset tabWidth : Nat)
-    : Nat :=
+    : Nat
+    :=
   Layout.stringWidthWithTabs tabWidth (prefixText view line offset)
 
 private
 def lineTouches
     (line : Line)
     (span : Span)
-    : Bool :=
+    : Bool
+    :=
   if span.start == span.stop then
     line.byteStart ≤ span.start && span.start ≤ line.byteEnd
   else
@@ -161,34 +175,39 @@ def labelTouches
     (sourceId : SourceId)
     (line : Line)
     (label : Label)
-    : Bool :=
+    : Bool
+    :=
   label.span.source == sourceId && lineTouches line label.span
 
 private
 def sourceLabels
     (sourceId : SourceId)
     (labels : List Label)
-    : List Label :=
+    : List Label
+    :=
   labels.filter fun label => label.span.source == sourceId
 
 private
 def firstLabel
     (labels : List Label)
-    : Option Label :=
+    : Option Label
+    :=
   labels.head?
 
 private
 def lineNumberOf
     (view : SourceView)
     (label : Label)
-    : Nat :=
+    : Nat
+    :=
   (lineAt view label.span.start).map (·.number) |>.getD 1
 
 private
 def endLineNumberOf
     (view : SourceView)
     (label : Label)
-    : Nat :=
+    : Nat
+    :=
   let offset := if label.span.stop > label.span.start then label.span.stop - 1 else label.span.stop
   (lineAt view offset).map (·.number) |>.getD 1
 
@@ -196,7 +215,8 @@ private
 def minLineNumber
     (view : SourceView)
     (labels : List Label)
-    : Nat :=
+    : Nat
+    :=
   labels.foldl (fun result label => min result (lineNumberOf view label))
     (Nat.succ view.lines.length)
 
@@ -204,7 +224,8 @@ private
 def maxLineNumber
     (view : SourceView)
     (labels : List Label)
-    : Nat :=
+    : Nat
+    :=
   labels.foldl (fun result label => max result (endLineNumberOf view label)) 0
 
 private
@@ -212,14 +233,16 @@ def lineIsShown
     (config : RenderConfig)
     (low high : Nat)
     (line : Line)
-    : Bool :=
+    : Bool
+    :=
   line.number + config.contextLines ≥ low && line.number ≤ high + config.contextLines
 
 private
 def lineText
     (config : RenderConfig)
     (line : Line)
-    : String :=
+    : String
+    :=
   Layout.expandTabs config.tabWidth line.text
 
 private inductive DiffLine where
@@ -242,14 +265,16 @@ private
 def trailing
     (count : Nat)
     (lines : List String)
-    : List String :=
+    : List String
+    :=
   lines.drop (lines.length - min count lines.length)
 
 private
 def fixItDiffLines
     (config : RenderConfig)
     (source updated : Source)
-    : List DiffLine :=
+    : List DiffLine
+    :=
   let oldLines := (Source.lines source).map (·.text)
   let newLines := (Source.lines updated).map (·.text)
   if oldLines == newLines then []
@@ -268,14 +293,16 @@ private
 def fixItStyle
     (configured : Option Style)
     (fallback : Style)
-    : Style :=
+    : Style
+    :=
   configured.getD fallback
 
 private
 def fitDiffLine
     (config : RenderConfig)
     (line : Text)
-    : Text :=
+    : Text
+    :=
   Layout.truncate config.width line
 
 private
@@ -305,7 +332,8 @@ def renderFixIt
     (config : RenderConfig)
     (source : Source)
     (fixIt : FixIt)
-    : Text :=
+    : Text
+    :=
   match Source.applyFixIt source fixIt with
   | none => Text.empty
   | some updated =>
@@ -324,7 +352,8 @@ def renderFixIts
     (scheme : ColorScheme)
     (config : RenderConfig)
     (diagnostic : Diagnostic)
-    : List Text :=
+    : List Text
+    :=
   diagnostic.fixIts.filterMap fun fixIt =>
     match sources[fixIt.span.source]? with
     | none => none
@@ -338,7 +367,8 @@ def renderLine
     (config : RenderConfig)
     (line : Line)
     (numberWidth : Nat)
-    : Text :=
+    : Text
+    :=
   let available := max 1 (config.width - numberWidth - 3)
   let text := Layout.truncate available (Text.plain (lineText config line))
   Text.styled (padLeft numberWidth (toString line.number) ++ " " ++ gutter config.unicode ++ " ")
@@ -350,7 +380,8 @@ def markerBounds
     (config : RenderConfig)
     (line : Line)
     (label : Label)
-    : Nat × Nat :=
+    : Nat × Nat
+    :=
   let start := displayColumn view line label.span.start config.tabWidth
   let stop :=
     if label.span.start == label.span.stop then
@@ -369,7 +400,8 @@ def renderMarker
     (numberWidth : Nat)
     (label : Label)
     (showMessage : Bool)
-    : Text :=
+    : Text
+    :=
   let (start, stop) := markerBounds view config line label
   let mark := decoration label.kind
   let body := spaces start ++ repeatChar mark (stop - start)
@@ -381,7 +413,8 @@ private
 def sourceNameText
     (scheme : ColorScheme)
     (source : Source)
-    : Text :=
+    : Text
+    :=
   Text.styled source.name (Style.bold <+> Style.fg scheme.cyan)
 
 private
@@ -390,7 +423,8 @@ def sourceLocation
     (view : SourceView)
     (config : RenderConfig)
     (label : Label)
-    : Text :=
+    : Text
+    :=
   let line := lineAt view label.span.start
   let lineNumber := line.map (·.number) |>.getD 1
   let column := match line with
@@ -414,7 +448,8 @@ def renderSourceLine
     (line : Line)
     (numberWidth : Nat)
     (labels : List Label)
-    : List Text :=
+    : List Text
+    :=
   let visibleLabels := labels.filter (labelTouches sourceId line)
   let sourceText := renderLine scheme config line numberWidth
   let markers := visibleLabels.map fun label =>
@@ -425,7 +460,8 @@ def renderSourceLine
 private
 def uniqueIds
     (labels : List Label)
-    : List SourceId :=
+    : List SourceId
+    :=
   labels.foldl
     (fun ids label => if ids.contains label.span.source then ids else ids ++ [label.span.source]) []
 
@@ -436,7 +472,8 @@ def renderSource
     (config : RenderConfig)
     (diagnostic : Diagnostic)
     (sourceId : SourceId)
-    : Text :=
+    : Text
+    :=
   match sources[sourceId]? with
   | none => Text.empty
   | some source =>
@@ -469,7 +506,8 @@ private
 def renderNotes
     (scheme : ColorScheme)
     (diagnostic : Diagnostic)
-    : List Text :=
+    : List Text
+    :=
   let notes := diagnostic.notes.map fun note =>
     Text.styled "note" (Style.underline <+> Style.fg scheme.comment) ++
       Text.plain ": " ++ Text.plain note
@@ -482,7 +520,8 @@ private
 def renderHeader
     (scheme : ColorScheme)
     (diagnostic : Diagnostic)
-    : Text :=
+    : Text
+    :=
   let code := diagnostic.code.map (fun value => s!" [{value}]") |>.getD ""
   let style := severityStyle scheme diagnostic.severity
   Text.styled (severityName diagnostic.severity) (Style.underline <+> style) ++
@@ -494,7 +533,8 @@ def render
     (diagnostic : Diagnostic)
     (config : RenderConfig := {})
     (scheme : ColorScheme := ColorScheme.catppuccin)
-    : Text :=
+    : Text
+    :=
   let ids := uniqueIds diagnostic.labels
   let sourcesText := ids.map (renderSource sources scheme config diagnostic)
   let fixItsText := renderFixIts sources scheme config diagnostic
@@ -507,7 +547,8 @@ def renderMany
     (diagnostics : List Diagnostic)
     (config : RenderConfig := {})
     (scheme : ColorScheme := ColorScheme.catppuccin)
-    : Text :=
+    : Text
+    :=
   let rec join : List Text → Text
     | [] => Text.empty
     | [diagnostic] => diagnostic
@@ -517,7 +558,8 @@ def renderMany
 private
 def reportFieldWidth
     (fields : List ReportField)
-    : Nat :=
+    : Nat
+    :=
   fields.foldl (fun width field => max width field.label.length) 0
 
 private
@@ -525,7 +567,8 @@ def renderReportHeader
     (scheme : ColorScheme)
     (config : RenderConfig)
     (report : Report)
-    : Text :=
+    : Text
+    :=
   let code := report.code.map (fun value => s!" [{value}]") |>.getD ""
   let style := severityStyle scheme report.severity
   let header := Text.styled (severityName report.severity) (Style.underline <+> style) ++
@@ -538,7 +581,8 @@ def renderReportField
     (config : RenderConfig)
     (labelWidth : Nat)
     (field : ReportField)
-    : Text :=
+    : Text
+    :=
   let label := Text.styled (padRight labelWidth field.label)
     (Style.bold <+> Style.fg scheme.cyan)
   let value := Text.plain "  " ++ label ++ Text.plain "  " ++ Text.plain field.value
@@ -549,7 +593,8 @@ def renderReportMeta
     (scheme : ColorScheme)
     (config : RenderConfig)
     (report : Report)
-    : List Text :=
+    : List Text
+    :=
   let notes := report.notes.map fun note =>
     Layout.truncate config.width <| Text.styled "note"
       (Style.underline <+> Style.fg scheme.comment) ++ Text.plain ": " ++ Text.plain note
@@ -564,7 +609,8 @@ def renderReport
     (report : Report)
     (config : RenderConfig := {})
     (scheme : ColorScheme := ColorScheme.catppuccin)
-    : Text :=
+    : Text
+    :=
   let width := max 1 config.width
   let fieldWidth := reportFieldWidth report.fields
   let fields := report.fields.map (renderReportField scheme { config with width } fieldWidth)

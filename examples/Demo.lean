@@ -93,7 +93,8 @@ def diagnosticText
     (diagnostic : Diagnostic)
     (config : RenderConfig)
     (scheme : ColorScheme)
-    : String :=
+    : String
+    :=
   Text.render target (TermColor.Diagnostics.render sources diagnostic config scheme)
 
 private
@@ -103,7 +104,8 @@ def sourceDiagnosticText
     (diagnostic : Diagnostic)
     (config : RenderConfig)
     (scheme : ColorScheme)
-    : String :=
+    : String
+    :=
   Text.render target (TermColor.Diagnostics.render sourceSet diagnostic config scheme)
 
 private
@@ -111,7 +113,8 @@ def manyText
     (target : RenderTarget)
     (config : RenderConfig)
     (scheme : ColorScheme)
-    : String :=
+    : String
+    :=
   Text.render target (renderMany sources [invalidDuration, unusedWorkers, loaded] config scheme)
 
 private

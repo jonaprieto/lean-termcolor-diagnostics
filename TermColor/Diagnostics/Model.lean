@@ -36,12 +36,14 @@ def withUri (source : Source) (uri : String) : Source := { source with uri := so
 def fromBytes
     (name : String)
     (bytes : ByteArray)
-    : Source :=
+    : Source
+    :=
   { name, text := (String.fromUTF8? bytes).getD "�", rawBytes := some bytes.data }
 
 def utf8Bytes
     (source : Source)
-    : ByteArray :=
+    : ByteArray
+    :=
   match source.rawBytes with
   | some bytes => ByteArray.mk bytes
   | none => source.text.toUTF8
@@ -59,13 +61,15 @@ namespace Span
 def point
     (source : SourceId)
     (offset : Nat)
-    : Span :=
+    : Span
+    :=
   { source, start := offset, stop := offset }
 
 def range
     (source : SourceId)
     (start stop : Nat)
-    : Span :=
+    : Span
+    :=
   { source, start, stop }
 
 def length (span : Span) : Nat := span.stop - span.start
@@ -96,13 +100,15 @@ namespace Label
 def primary
     (span : Span)
     (message : String := "")
-    : Label :=
+    : Label
+    :=
   { span, kind := .primary, message }
 
 def secondary
     (span : Span)
     (message : String := "")
-    : Label :=
+    : Label
+    :=
   { span, kind := .secondary, message }
 
 end Label
@@ -120,7 +126,8 @@ namespace Source
 def applyFixIt
     (source : Source)
     (fixIt : FixIt)
-    : Option Source :=
+    : Option Source
+    :=
   let bytes := source.utf8Bytes
   if fixIt.span.start > fixIt.span.stop || fixIt.span.stop > bytes.size then none
   else
@@ -158,31 +165,36 @@ def help (title : String) : Diagnostic := { severity := .help, title }
 def withCode
     (diagnostic : Diagnostic)
     (code : String)
-    : Diagnostic :=
+    : Diagnostic
+    :=
   { diagnostic with code := some code }
 
 def withLabel
     (diagnostic : Diagnostic)
     (label : Label)
-    : Diagnostic :=
+    : Diagnostic
+    :=
   { diagnostic with labels := diagnostic.labels ++ [label] }
 
 def withFixIt
     (diagnostic : Diagnostic)
     (fixIt : FixIt)
-    : Diagnostic :=
+    : Diagnostic
+    :=
   { diagnostic with fixIts := diagnostic.fixIts ++ [fixIt] }
 
 def withNote
     (diagnostic : Diagnostic)
     (note : String)
-    : Diagnostic :=
+    : Diagnostic
+    :=
   { diagnostic with notes := diagnostic.notes ++ [note] }
 
 def withHelp
     (diagnostic : Diagnostic)
     (help : String)
-    : Diagnostic :=
+    : Diagnostic
+    :=
   { diagnostic with helps := diagnostic.helps ++ [help] }
 
 end Diagnostic
@@ -212,25 +224,29 @@ def info (title : String) : Report := { severity := .info, title }
 def withCode
     (report : Report)
     (code : String)
-    : Report :=
+    : Report
+    :=
   { report with code := some code }
 
 def withField
     (report : Report)
     (label value : String)
-    : Report :=
+    : Report
+    :=
   { report with fields := report.fields ++ [{ label, value }] }
 
 def withNote
     (report : Report)
     (note : String)
-    : Report :=
+    : Report
+    :=
   { report with notes := report.notes ++ [note] }
 
 def withHelp
     (report : Report)
     (help : String)
-    : Report :=
+    : Report
+    :=
   { report with helps := report.helps ++ [help] }
 
 end Report
