@@ -26,7 +26,8 @@ namespace Source
 private
 def lineRanges
     (bytes : ByteArray)
-    : List (Nat × Nat) :=
+    : List (Nat × Nat)
+    :=
   let rec go (index start : Nat) (ranges : List (Nat × Nat)) : List (Nat × Nat) :=
     if index >= bytes.size then
       (start, bytes.size) :: ranges
@@ -41,7 +42,8 @@ def lineRanges
 private
 def decodeLossy
     (bytes : ByteArray)
-    : String :=
+    : String
+    :=
   let rec go (index : Nat) (characters : List Char) : String :=
     if index < bytes.size then
       match bytes.utf8DecodeChar? index with
@@ -60,7 +62,8 @@ private
 def decode
     (bytes : ByteArray)
     (start stop : Nat)
-    : String :=
+    : String
+    :=
   match String.fromUTF8? (bytes.extract start stop) with
   | some text => text
   | none => "�"
@@ -68,7 +71,8 @@ def decode
 /-- Source lines with one-based line numbers and UTF-8 byte boundaries. -/
 def linesFromBytes
     (bytes : ByteArray)
-    : List Line :=
+    : List Line
+    :=
   (lineRanges bytes).mapIdx fun index (start, stop) =>
     { number := index + 1
       byteStart := start
@@ -77,7 +81,8 @@ def linesFromBytes
 
 def lines
     (source : Source)
-    : List Line :=
+    : List Line
+    :=
   linesFromBytes source.utf8Bytes
 
 /-- Decode a byte slice while replacing malformed UTF-8 one byte at a time. -/
@@ -87,7 +92,8 @@ def decodePrefix (bytes : ByteArray) : String := decodeLossy bytes
 def lineAt
     (source : Source)
     (offset : Nat)
-    : Option Line :=
+    : Option Line
+    :=
   let safeOffset := min offset source.utf8Bytes.size
   (lines source).find? fun line => line.byteStart ≤ safeOffset && safeOffset ≤ line.byteEnd
 

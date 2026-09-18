@@ -12,7 +12,8 @@ private
 def check
     (name : String)
     (condition : Bool)
-    : Option String :=
+    : Option String
+    :=
   if condition then none else some name
 
 private def source : Sources :=
@@ -90,7 +91,8 @@ private def fixItConfig : RenderConfig :=
 private
 def plain
     (diagnostic : Diagnostic)
-    : String :=
+    : String
+    :=
   (render source diagnostic { width := 80 }).plainText
 
 private
@@ -98,7 +100,8 @@ def renderOne
     (source : Source)
     (diagnostic : Diagnostic)
     (config : RenderConfig := {})
-    : Text :=
+    : Text
+    :=
   render #[source] diagnostic config
 
 private def checks : List (Option String) :=
