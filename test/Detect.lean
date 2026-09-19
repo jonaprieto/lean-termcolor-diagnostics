@@ -19,7 +19,8 @@ def expected
 
 def main
     (argv : List String)
-    : IO UInt32 := do
+    : IO UInt32
+    := do
   let target ← targetWithTty .auto false
   match argv with
   | [caseName] =>
