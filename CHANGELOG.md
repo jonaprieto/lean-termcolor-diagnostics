@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.19 — 2026-11-20
+
+- Support Lean v4.36.0.
+
 ## 0.1.18 — 2026-09-09
 
 - Refresh TermColor Layout and document the contribution policy and package problem.
